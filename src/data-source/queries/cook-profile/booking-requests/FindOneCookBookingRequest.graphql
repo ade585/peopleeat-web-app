@@ -20,10 +20,6 @@ query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                price {
-                    amount
-                    currencyCode
-                }
                 location {
                     text
                 }

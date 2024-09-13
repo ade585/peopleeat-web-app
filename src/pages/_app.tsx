@@ -29,6 +29,8 @@ export const apolloClient: ApolloClient<NormalizedCacheObject> = createComplexAp
 );
 
 const PeopleEatApp: AppType = ({ Component, pageProps, router }: AppPropsType) => {
+    console.log('>>>>> END 10');
+
     moment.locale(router.locale);
 
     useEffect(() => clarity.init('l6qxwo5j7v'));

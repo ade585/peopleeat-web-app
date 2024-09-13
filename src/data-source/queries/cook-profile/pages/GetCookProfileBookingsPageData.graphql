@@ -21,10 +21,6 @@ query GetCookProfileBookingsPageData($cookId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                price {
-                    amount
-                    currencyCode
-                }
                 location {
                     latitude
                     longitude

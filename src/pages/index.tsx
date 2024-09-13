@@ -38,6 +38,7 @@ interface ServerSideProps {
 
 export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({ req }) => {
     const apolloClient = createApolloClient(req.headers.cookie);
+    console.log('sqdjkjdsqhkjdsqhjhdsqjkhdsqkjhdkjdsqhkjdsqhkjdskdsqhdsqkjhdsqk');
 
     try {
         const { data } = await apolloClient.query({ query: GetHomePageDataDocumentDocument });
@@ -68,6 +69,7 @@ export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({ 
 export const HomePageContext: Context<{ signedInUser?: SignedInUser }> = createContext({});
 
 const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, heroCooks, heroMenus }) => {
+    console.log('ndex: NextPage<ServerSideProps>');
     const [showCookieBanner, setShowCookieBanner] = useState(false);
     const [cookieSettings, setCookieSettings] = useState<SessionCookieSettingsInput>({
         sessionCookie: false,

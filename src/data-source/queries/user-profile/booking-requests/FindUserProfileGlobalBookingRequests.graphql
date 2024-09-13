@@ -9,12 +9,7 @@ query FindUserProfileGlobalBookingRequests($userId: String!) {
                 message
                 dateTime
                 duration
-                priceClass {
-                    type
-                    min
-                    max
-                    currencyCode
-                }
+
                 location {
                     latitude
                     longitude

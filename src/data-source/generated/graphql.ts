@@ -132,7 +132,7 @@ export type BookingRequest = {
     message: Scalars['String'];
     occasion: Scalars['String'];
     preparationTime: Scalars['UnsignedInt'];
-    price: Price;
+
     status: BookingRequestStatus;
     user: PublicUser;
     userAccepted?: Maybe<Scalars['Boolean']>;
@@ -3190,7 +3190,7 @@ export type FindManyCookBookingRequestsQuery = {
                 duration: number;
                 createdAt: Date;
                 user: { __typename?: 'PublicUser'; firstName: string; profilePictureUrl?: string | null };
-                price: { __typename?: 'Price'; amount: number; currencyCode: CurrencyCode };
+
                 configuredMenu?: { __typename?: 'ConfiguredMenu'; title: string } | null;
             }> | null;
         };
@@ -5699,6 +5699,7 @@ export const GetGlobalBookingRequestPageDataDocument = {
         },
     ],
 } as unknown as DocumentNode<GetGlobalBookingRequestPageDataQuery, GetGlobalBookingRequestPageDataQueryVariables>;
+
 export const GetHomePageDataDocumentDocument = {
     kind: 'Document',
     definitions: [
@@ -5865,6 +5866,7 @@ export const GetHomePageDataDocumentDocument = {
         },
     ],
 } as unknown as DocumentNode<GetHomePageDataDocumentQuery, GetHomePageDataDocumentQueryVariables>;
+
 export const GetMenuBookingRequestPageDataDocument = {
     kind: 'Document',
     definitions: [

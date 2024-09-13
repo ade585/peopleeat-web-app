@@ -13,10 +13,7 @@ query FindManyUserBookingRequests($userId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                price {
-                    amount
-                    currencyCode
-                }
+
                 duration
                 createdAt
                 cook {

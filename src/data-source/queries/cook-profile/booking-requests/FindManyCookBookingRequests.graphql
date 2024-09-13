@@ -17,10 +17,6 @@ query FindManyCookBookingRequests($cookId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                price {
-                    amount
-                    currencyCode
-                }
                 duration
                 createdAt
                 configuredMenu {

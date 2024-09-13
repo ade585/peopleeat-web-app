@@ -16,10 +16,7 @@ query GetUserProfileBookingsPageData($userId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                price {
-                    amount
-                    currencyCode
-                }
+
                 location {
                     latitude
                     longitude
@@ -49,12 +46,7 @@ query GetUserProfileBookingsPageData($userId: String!) {
                 message
                 dateTime
                 duration
-                priceClass {
-                    type
-                    min
-                    max
-                    currencyCode
-                }
+
                 location {
                     latitude
                     longitude

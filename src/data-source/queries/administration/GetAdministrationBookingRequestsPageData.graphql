@@ -28,10 +28,7 @@ query GetAdministrationBookingRequestsPageData {
                 rank
                 city
             }
-            price {
-                amount
-                currencyCode
-            }
+
             location {
                 latitude
                 longitude
