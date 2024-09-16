@@ -13,9 +13,9 @@ query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-
-                location {
-                    text
+                price {
+                    amount
+                    currencyCode
                 }
                 duration
                 createdAt
@@ -28,7 +28,19 @@ query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {
                     }
                 }
                 configuredMenu {
-                    ...ConfiguredMenu
+                    menuId
+                    title
+                    description
+                    greetingFromKitchen
+                    kitchenId
+                    courses {
+                        index
+                        title
+                        mealTitle
+                        mealDescription
+                        mealImageUrl
+                        mealType
+                    }
                 }
             }
         }

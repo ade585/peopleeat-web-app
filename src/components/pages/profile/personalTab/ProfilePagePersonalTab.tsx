@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from '@apollo/client';
-import CakeIcon from '@mui/icons-material/Cake';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, DialogContent } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import List from '@mui/material/List';
+import { DatePicker } from '@mui/x-date-pickers';
 import moment from 'moment';
 import useTranslation from 'next-translate/useTranslation';
 import Image from 'next/image';
@@ -24,7 +24,6 @@ import { Icon } from '../../../standard/icon/Icon';
 import PEIcon from '../../../standard/icon/PEIcon';
 import PEIconButton from '../../../standard/iconButton/PEIconButton';
 import PEImagePicker from '../../../standard/imagePicker/PEImagePicker';
-import PEMobileBottomSheet from '../../../standard/modal/PEMobileBottomSheet';
 import PEModalPopUp from '../../../standard/modal/PEModalPopUp';
 import PEEmailTextField from '../../../standard/textFields/PEEmailTextField';
 import PEPasswordTextField from '../../../standard/textFields/PEPasswordTextField';
@@ -76,8 +75,10 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
     const [lastName, setLastName] = useState(userProfile?.lastName);
     const [isCook, setIsCook] = useState(userProfile?.isCook);
 
+    const [editFirstName, setEditFirstName] = useState(userProfile?.firstName);
+    const [editLastName, setEditLastName] = useState(userProfile?.lastName);
     const [editedProfilePicture, setEditedProfilePicture] = useState<File | undefined | null>(null);
-    const [editPhoneNumber, setEditPhoneNumber] = useState(userProfile?.phoneNumberUpdate?.phoneNumber ?? '');
+    const [editPhoneNumber, setEditPhoneNumber] = useState(userProfile?.phoneNumber ?? '');
     const [editBirthDate, setEditBirthDate] = useState<Date | null>(userProfile?.birthDate ? new Date(userProfile.birthDate) : null);
     const [editEmail, setEditEmail] = useState('');
     const [showPasswordChangeSuccessDialog, setShowPasswordChangeSuccessDialog] = useState(false);
@@ -87,19 +88,19 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
         setFirstName(userProfile?.firstName);
         setLastName(userProfile?.lastName);
         setImage(userProfile?.profilePictureUrl ?? undefined);
+        setEditFirstName(userProfile?.firstName);
+        setEditLastName(userProfile?.lastName);
         setIsCook(userProfile?.isCook);
-        setEditEmail(userProfile?.emailAddress ?? '');
-        // @todo should be the verified phone number
-        setEditPhoneNumber(userProfile?.phoneNumberUpdate?.phoneNumber ?? '');
-    }, [loading, data, userProfile]);
+    }, [loading, data, userProfile?.firstName, userProfile?.lastName, userProfile?.profilePictureUrl, userProfile?.isCook]);
 
     useEffect(() => {
         if (router.pathname === '/profile') void refetch();
     }, [router, refetch]);
 
     function handleUnSaveChefName(): void {
-        // @todo should be the verified phone number
-        setEditPhoneNumber(userProfile?.phoneNumberUpdate?.phoneNumber ?? '');
+        setEditFirstName(userProfile?.firstName ?? '');
+        setEditLastName(userProfile?.lastName ?? '');
+        setEditPhoneNumber(userProfile?.phoneNumber ?? '');
         setEditBirthDate(userProfile?.birthDate ? new Date(userProfile.birthDate) : null);
         setEdit(!edit);
     }
@@ -123,6 +124,8 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
         }
 
         if (
+            firstName !== editFirstName ||
+            lastName !== editLastName ||
             editPhoneNumber !== userProfile?.phoneNumber ||
             editBirthDate !== (userProfile?.birthDate ? new Date(userProfile.birthDate) : null)
         ) {
@@ -163,6 +166,8 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
         }
 
         setEditedProfilePicture(undefined);
+        setFirstName(editFirstName);
+        setLastName(editLastName);
         setEdit(!edit);
     }
 
@@ -178,7 +183,6 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                     } else setShowPasswordChangeFailedDialog(true);
 
                     setChangedPassword('');
-                    setRepeatPassword('');
                 })
                 .catch((e) => console.error(e));
         } else setShowPasswordChangeFailedDialog(true);
@@ -191,7 +195,6 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                     <HStack className="w-full bg-white shadow-primary box-border p-8 md:p-4 rounded-4" gap={16}>
                         {userProfile.profilePictureUrl && (
                             <Image
-                                unoptimized
                                 style={{
                                     width: isMobile ? '60px' : '120px',
                                     height: isMobile ? '60px' : '120px',
@@ -257,7 +260,7 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
 
                                 {!isCook && (
                                     <Link href="/chef-sign-up" className="no-underline">
-                                        <PEButton onClick={(): void => undefined} title={commonTranslation('register-as-chef')} />
+                                        <PEButton onClick={(): void => undefined} title={commonTranslation('how-to-become-a-chef')} />
                                     </Link>
                                 )}
                             </>
@@ -285,20 +288,13 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                             <VStack style={{ alignItems: 'flex-start', flex: 1, minWidth: isMobile ? 200 : 420 }}>
                                 <p className="m-0 mb-3">{t('birthday-label')}</p>
 
-                                <PETextField
-                                    disabled
-                                    type="text"
-                                    value={userProfile.birthDate ? moment(userProfile.birthDate).format('LL') : ''}
-                                    endContent={<CakeIcon />}
-                                />
-
-                                {/* <DatePicker
+                                <DatePicker
                                     className="border-solid w-full box-border border-[1px] border-disabled p-[11px] rounded-3 hover:border-black"
                                     sx={{ width: '100%' }}
                                     disabled
                                     value={userProfile.birthDate ? moment(userProfile.birthDate) : undefined}
                                     slotProps={{ textField: { variant: 'standard', InputProps: { disableUnderline: true } } }}
-                                /> */}
+                                />
                             </VStack>
                             <VStack style={{ alignItems: 'flex-start', flex: 1, minWidth: isMobile ? 200 : 420 }}>
                                 <p className="m-0 mb-3">{t('email-address-label')}</p>
@@ -314,7 +310,7 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                                     />
                                 )}
                                 {userProfile.emailAddress && !userProfile.emailAddressUpdate?.emailAddress && (
-                                    <PETextField disabled type="text" value={userProfile.emailAddress} endContent={<MailOutlineIcon />} />
+                                    <PETextField disabled type="text" value={userProfile.emailAddress} />
                                 )}
                             </VStack>
                             <VStack style={{ alignItems: 'flex-start', flex: 1, minWidth: isMobile ? 200 : 420 }}>
@@ -431,7 +427,6 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                                     borderRadius: '12px',
                                 }}
                             />
-
                             {repeatPassword !== changedPassword && repeatPassword !== '' && (
                                 <p className="text-slate-400 text-xs">Password are not matching</p>
                             )}
@@ -447,17 +442,20 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                             </HStack>
                         </VStack>
 
-                        <Dialog open={showPasswordChangeSuccessDialog}>
-                            <DialogTitle>{t('password-popup-success-title')}</DialogTitle>
-                            <DialogContent>
-                                <p>Dein Passwort wurde erfolgreich geändert. Du kannst es bei Deiner nächsten Anmeldung verwenden.</p>
+                        <PEModalPopUp
+                            width={isMobile ? '100%' : 750}
+                            openMenu={showPasswordChangeSuccessDialog}
+                            handleOpenMenu={(): void => setShowPasswordChangeSuccessDialog(false)}
+                        >
+                            <VStack className="w-[750px] md:w-full md:h-full px-10 md:px-4 py-15 md:py-4 box-border relative">
+                                <h2 className="m-0 pb-5">{t('password-popup-success-title')}</h2>
                                 <PEButton
                                     className="max-w-[250px] mt-10"
                                     onClick={(): void => setShowPasswordChangeSuccessDialog(false)}
                                     title={t('password-popup-close')}
                                 />
-                            </DialogContent>
-                        </Dialog>
+                            </VStack>
+                        </PEModalPopUp>
 
                         <PEModalPopUp
                             width={isMobile ? '100%' : 750}
@@ -480,14 +478,19 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                             <VStack className="w-[750px] md:w-full md:h-full px-10 md:px-4 py-15 md:py-4 box-border relative">
                                 <h2 className="m-0 pb-5">{t('popup-edit-user-profile')}</h2>
                                 <VStack className="w-full gap-4" style={{ alignItems: 'flex-start' }}>
+                                    <PETextField
+                                        type={'text'}
+                                        value={editFirstName}
+                                        onChange={(newFirstName: string): void => setEditFirstName(newFirstName)}
+                                    />
+                                    <PETextField
+                                        type={'text'}
+                                        value={editLastName}
+                                        onChange={(newLastName: string): void => setEditLastName(newLastName)}
+                                    />
                                     <PEPhoneNumberTextField
                                         phoneNumber={editPhoneNumber}
                                         onChange={(newPhoneNumber: string): void => setEditPhoneNumber(newPhoneNumber)}
-                                    />
-                                    <PEEmailTextField
-                                        email={editEmail}
-                                        onChange={(newEmail: string): void => setEditEmail(newEmail)}
-                                        placeholder={userProfile?.emailAddressUpdate?.emailAddress ?? ''}
                                     />
                                     {/* <DatePicker
                                         className="border-solid w-full box-border border-[1px] border-disabled p-[11px] rounded-3 hover:border-black"
@@ -501,6 +504,11 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                                         defaultImage={image}
                                         onRemoveDefaultImage={(): void => setEditedProfilePicture(undefined)}
                                     />
+                                    <PEEmailTextField
+                                        email={editEmail}
+                                        onChange={(newEmail: string): void => setEditEmail(newEmail)}
+                                        placeholder={userProfile?.emailAddressUpdate?.emailAddress ?? ''}
+                                    />
                                 </VStack>
                                 <PEButton
                                     className="max-w-[250px] mt-10"
@@ -508,6 +516,8 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                                     title={t('popup-edit-button')}
                                     disabled={
                                         editedProfilePicture === null &&
+                                        firstName === editFirstName &&
+                                        lastName === editLastName &&
                                         editPhoneNumber === userProfile?.phoneNumber &&
                                         editBirthDate === (userProfile?.birthDate ? new Date(userProfile.birthDate) : null)
                                     }
@@ -516,34 +526,76 @@ export default function ProfilePagePersonalTab({ userId }: ProfilePagePersonalTa
                         </PEModalPopUp>
                     )}
 
-                    <PEMobileBottomSheet open={edit && isMobile} onClose={(): void => setEdit(false)} title={t('popup-edit-user-profile')}>
-                        <VStack style={{ alignItems: 'flex-start' }} gap={16}>
-                            <PEPhoneNumberTextField
-                                phoneNumber={editPhoneNumber}
-                                onChange={(newPhoneNumber: string): void => setEditPhoneNumber(newPhoneNumber)}
-                            />
-                            <PEEmailTextField
-                                email={editEmail}
-                                onChange={(newEmail: string): void => setEditEmail(newEmail)}
-                                placeholder={userProfile?.emailAddressUpdate?.emailAddress ?? ''}
-                            />
-                            <PEImagePicker
-                                onPick={setEditedProfilePicture}
-                                defaultImage={image}
-                                onRemoveDefaultImage={(): void => setEditedProfilePicture(undefined)}
-                            />
-                        </VStack>
-
-                        <PEButton
-                            onClick={handleSaveProfileInfo}
-                            title={t('popup-edit-button')}
-                            disabled={
-                                editedProfilePicture === null &&
-                                editPhoneNumber === userProfile?.phoneNumber &&
-                                editBirthDate === (userProfile?.birthDate ? new Date(userProfile.birthDate) : null)
-                            }
-                        />
-                    </PEMobileBottomSheet>
+                    {isMobile && (
+                        <div style={{ position: 'absolute', height: '100vh', overflowY: 'scroll' }}>
+                            <Dialog
+                                sx={{
+                                    height: '100vh',
+                                    width: '100%',
+                                    minHeight: '90%',
+                                    minWidth: '100%',
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    '& .MuiPaper-root': {
+                                        margin: '5vh 0 0',
+                                        borderRadius: '16px 16px 0 0',
+                                        padding: '16px',
+                                        boxSizing: 'border-box',
+                                        minHeight: '95vh',
+                                        minWidth: '100%',
+                                    },
+                                }}
+                                aria-describedby="alert-dialog-slide-description"
+                                open={edit}
+                                onClose={(): void => setEdit(false)}
+                            >
+                                <List
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        flexDirection: 'column',
+                                        minHeight: '90%',
+                                        minWidth: '100%',
+                                        height: '80vh',
+                                    }}
+                                >
+                                    <DialogContent sx={{ padding: '30px 0' }}>
+                                        <h2 className="m-0 pb-5">{t('popup-edit-user-profile')}</h2>
+                                        <VStack className="w-full gap-4" style={{ alignItems: 'flex-start' }}>
+                                            <PETextField type={'text'} value={editFirstName} onChange={setEditFirstName} />
+                                            <PETextField type={'text'} value={editLastName} onChange={setEditLastName} />
+                                            <PEPhoneNumberTextField
+                                                phoneNumber={editPhoneNumber}
+                                                onChange={(newPhoneNumber: string): void => setEditPhoneNumber(newPhoneNumber)}
+                                            />
+                                            <PEEmailTextField
+                                                email={editEmail}
+                                                onChange={(newEmail: string): void => setEditEmail(newEmail)}
+                                                placeholder={userProfile?.emailAddressUpdate?.emailAddress ?? ''}
+                                            />
+                                            <PEImagePicker
+                                                onPick={setEditedProfilePicture}
+                                                defaultImage={image}
+                                                onRemoveDefaultImage={(): void => setEditedProfilePicture(undefined)}
+                                            />
+                                        </VStack>
+                                        <PEButton
+                                            className="max-w-[250px] mt-10"
+                                            onClick={handleSaveProfileInfo}
+                                            title={t('popup-edit-button')}
+                                            disabled={
+                                                editedProfilePicture === null &&
+                                                firstName === editFirstName &&
+                                                lastName === editLastName &&
+                                                editPhoneNumber === userProfile?.phoneNumber &&
+                                                editBirthDate === (userProfile?.birthDate ? new Date(userProfile.birthDate) : null)
+                                            }
+                                        />
+                                    </DialogContent>
+                                </List>
+                            </Dialog>
+                        </div>
+                    )}
                 </>
             )}
 

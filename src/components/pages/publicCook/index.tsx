@@ -19,8 +19,10 @@ import { type Location } from '../../../shared-domain/Location';
 import { type SignedInUser } from '../../../shared-domain/SignedInUser';
 import PEMenuCard from '../../cards/menuCard/PEMenuCard';
 import PEMenuCardMobile from '../../cards/menuCard/PEMenuCardMobile';
+import PEReviewCardMenu from '../../cards/reviewCard/PEReviewCardMenu';
 import PEFooter from '../../footer/PEFooter';
 import PEHeader from '../../header/PEHeader';
+import PEButton from '../../standard/buttons/PEButton';
 import PEFavorite from '../../standard/favorite/PEFavorite';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
@@ -28,7 +30,6 @@ import PETabItem from '../../standard/tabItem/PETabItem';
 import HStack from '../../utility/hStack/HStack';
 import Spacer from '../../utility/spacer/Spacer';
 import VStack from '../../utility/vStack/VStack';
-import { calculateMenuPrice } from '../cookProfile/menusTab/createMenu/createMenuStep3/ChefProfilePageCreateMenuStep3';
 
 export interface PublicCookPageProps {
     signedInUser?: SignedInUser;
@@ -69,6 +70,7 @@ export interface PublicCookPageProps {
 
 export default function PublicCookPage({ signedInUser, publicCook, categories, kitchens }: PublicCookPageProps): ReactElement {
     const { t } = useTranslation('common');
+    const { t: bookingTranslations } = useTranslation('global-booking-request');
     const { isMobile } = useResponsive();
     const [selectedKitchen, setSelectedKitchen] = useState<Kitchen | undefined>();
     const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
@@ -78,11 +80,11 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
 
     useEffect(() => {
         if (followings) {
-            const foundFollowing = followings.find((following) => following.cook.cookId === publicCook?.cookId);
+            const foundFollowing = followings.find((following) => following.cook.user.firstName === publicCook?.user.firstName);
             if (foundFollowing) setLike(true);
             else setLike(false);
         }
-    }, [followings, publicCook]);
+    }, []);
 
     const [createFollowing] = useMutation(CreateOneFollowingDocument);
     const [deleteFollowing] = useMutation(DeleteOneFollowingDocument);
@@ -91,7 +93,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
         <VStack gap={40} className="w-full h-full">
             <PEHeader signedInUser={signedInUser} />
 
-            <VStack className="relative lg:w-[calc(100%-32px)] w-[calc(100%-64px)] max-w-screen-xl mx-8 lg:mx-4" gap={32}>
+            <VStack className="relative lg:w-[calc(100%-32px)] w-[calc(100%-64px)] max-w-screen-xl mx-8 lg:mx-4" gap={16}>
                 {publicCook && (
                     <>
                         <HStack
@@ -101,7 +103,6 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                         >
                             {publicCook.user.profilePictureUrl && (
                                 <Image
-                                    unoptimized
                                     style={{
                                         width: '120px',
                                         height: '120px',
@@ -169,16 +170,14 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                 />
                             </div>
                         </HStack>
-
-                        {/* <HStack className="w-full bg-white shadow-primary box-border p-8 rounded-4">
+                        <HStack className="w-full bg-white shadow-primary box-border p-8 rounded-4">
                             <VStack gap={20} className="w-full" style={{ alignItems: 'flex-start' }}>
                                 <p className="text-heading-m my-0">Video</p>
                                 <video style={{ margin: '0 auto' }} controls>
                                     <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
                                 </video>
                             </VStack>
-                        </HStack> */}
-
+                        </HStack>
                         <HStack
                             gap={16}
                             className="w-full bg-white shadow-primary box-border p-8 rounded-4"
@@ -233,11 +232,12 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
 
                         <HStack gap={16} style={{ flexWrap: 'wrap', justifyContent: 'flex-start' }} className="w-full">
                             {publicCook.menus
-                                .filter((menu) => {
-                                    if (selectedKitchen && selectedKitchen.kitchenId !== menu.kitchen?.kitchenId) return false;
+                                .filter((_menu, index) => {
+                                    if (selectedKitchen && selectedKitchen.kitchenId !== _menu.kitchen?.kitchenId) return false;
 
-                                    if (selectedCategory && !menu.categories.some((cat) => cat.title === selectedCategory.title))
+                                    if (selectedCategory && !_menu.categories.some((cat) => cat.title === selectedCategory.title))
                                         return false;
+                                    if (isMobile ? index > 4 : index > 3) return false;
 
                                     return true;
                                 })
@@ -250,8 +250,8 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                                 address: '',
                                                 latitude: 0,
                                                 longitude: 0,
-                                                adults: 4,
-                                                children: 0,
+                                                adults: 3,
+                                                children: 1,
                                                 date: moment().format(moment.HTML5_FMT.DATE),
                                             },
                                         }}
@@ -262,16 +262,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                                 title={menu.title}
                                                 description={menu.description}
                                                 imageUrls={menu.imageUrls}
-                                                pricePerPerson={
-                                                    calculateMenuPrice(
-                                                        4,
-                                                        0,
-                                                        menu.basePrice,
-                                                        menu.basePriceCustomers,
-                                                        menu.pricePerAdult,
-                                                        menu.pricePerChild ?? undefined,
-                                                    ) / 4
-                                                }
+                                                pricePerPerson={100}
                                                 currencyCode={menu.currencyCode}
                                                 chefFirstName={publicCook.user.firstName}
                                                 chefProfilePictureUrl={publicCook.user.profilePictureUrl}
@@ -286,16 +277,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                                 title={menu.title}
                                                 description={menu.description}
                                                 imageUrls={menu.imageUrls}
-                                                pricePerPerson={
-                                                    calculateMenuPrice(
-                                                        4,
-                                                        0,
-                                                        menu.basePrice,
-                                                        menu.basePriceCustomers,
-                                                        menu.pricePerAdult,
-                                                        menu.pricePerChild ?? undefined,
-                                                    ) / 4
-                                                }
+                                                pricePerPerson={100}
                                                 currencyCode={menu.currencyCode}
                                                 chefFirstName={publicCook.user.firstName}
                                                 chefProfilePictureUrl={publicCook.user.profilePictureUrl}
@@ -313,8 +295,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                     <PEButton title="All menus" onClick={(): void => undefined} />
                                 </Link>
                             )} */}
-
-                            {/* <Link
+                            <Link
                                 href={{
                                     pathname: '/cook-booking-request',
                                     query: {
@@ -324,7 +305,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                         longitude: 0,
                                         adults: 3,
                                         children: 1,
-                                        date: moment().format('L'),
+                                        date: moment().format(moment.HTML5_FMT.DATE),
                                     },
                                 }}
                                 className="no-underline w-[93vw]"
@@ -334,18 +315,9 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                     type="primary"
                                     onClick={(): void => undefined}
                                 />
-                            </Link> */}
+                            </Link>
                         </HStack>
-
-                        <VStack gap={32} style={{ width: isMobile ? '93vw' : '100%', alignItems: 'flex-start' }}>
-                            <HStack gap={16}>
-                                <span className="text-heading-m">Bewertungen</span>
-                                <Spacer />
-                            </HStack>
-                            <span style={{ color: 'gray' }}>Noch keine Bewertungen vorhanden.</span>
-                        </VStack>
-
-                        {/* <>
+                        <>
                             <HStack
                                 className="w-full items-center  bg-white shadow-primary box-border rounded-4 p-[2rem]"
                                 style={{ justifyContent: 'space-between' }}
@@ -429,7 +401,7 @@ export default function PublicCookPage({ signedInUser, publicCook, categories, k
                                     />
                                 </div>
                             </VStack>
-                        </> */}
+                        </>
                     </>
                 )}
             </VStack>

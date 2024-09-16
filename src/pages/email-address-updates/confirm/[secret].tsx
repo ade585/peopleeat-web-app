@@ -1,46 +1,35 @@
 import { useMutation } from '@apollo/client';
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import { type NextPage } from 'next';
+import useTranslation from 'next-translate/useTranslation';
 import Head from 'next/head';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 import PEFooter from '../../../components/footer/PEFooter';
-import PEHeader from '../../../components/header/PEHeader';
-import { LoadingDialog } from '../../../components/loadingDialog/LoadingDialog';
+import PEHeaderDesktop from '../../../components/header/PEHeaderDesktop';
+import PEHeaderMobile from '../../../components/header/PEHeaderMobile';
 import PEButton from '../../../components/standard/buttons/PEButton';
 import Spacer from '../../../components/utility/spacer/Spacer';
 import VStack from '../../../components/utility/vStack/VStack';
 import { ConfirmOneEmailAddressUpdateDocument } from '../../../data-source/generated/graphql';
+import useResponsive from '../../../hooks/useResponsive';
 
 const Index: NextPage = () => {
+    const { isMobile } = useResponsive();
     const router = useRouter();
     const secret = router.query.secret;
-
-    const [state, setState] = useState<'LOADING' | 'FAILED' | 'SUCCESSFUL'>('LOADING');
-
-    const [confirmOneEmailAddressUpdate] = useMutation(ConfirmOneEmailAddressUpdateDocument);
-
-    useEffect(() => {
-        if (!secret || typeof secret !== 'string') {
-            setState('FAILED');
-            return;
-        }
-        confirmOneEmailAddressUpdate({ variables: { secret } })
-            .then(({ data }) => {
-                if (!data?.users.emailAddressUpdate.success) {
-                    setState('FAILED');
-                    return;
-                }
-                setState('SUCCESSFUL');
-            })
-            .catch(() => setState('FAILED'));
-    }, [confirmOneEmailAddressUpdate, secret]);
+    const { t } = useTranslation('common');
+    const [confirmOneEmailAddressUpdate, { data, loading, error }] = useMutation(ConfirmOneEmailAddressUpdateDocument, {
+        variables: { userId: '', secret: secret as string },
+    });
 
     return (
         <>
             <Head>
-                <title>PeopleEat - Email Confirmation</title>
+                <title>PeopleEat - email confirmation</title>
 
                 <meta name="title" content="" />
                 <meta name="description" content="" />
@@ -48,31 +37,38 @@ const Index: NextPage = () => {
 
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-
             <VStack className="w-full min-h-screen" gap={64}>
-                <PEHeader />
+                {isMobile ? <PEHeaderMobile /> : <PEHeaderDesktop />}
 
-                <LoadingDialog isLoading={state === 'LOADING'} />
-
-                <Dialog open={state === 'FAILED'}>
-                    <DialogTitle>Da ist etwas schief gelaufen</DialogTitle>
-                    <DialogContent>Es ist ein unerwarteter Fehler aufgetreten</DialogContent>
-                </Dialog>
-
-                <Dialog open={state === 'SUCCESSFUL'}>
-                    <DialogTitle>Deine Email Adresse wurde erfolgreich bestätigt</DialogTitle>
+                <Dialog open>
+                    <DialogTitle>{t('email-confirmation')}</DialogTitle>
                     <DialogContent>
-                        <VStack gap={32}>
-                            <Image
-                                unoptimized
-                                src="/email-confirmation.png"
-                                alt=""
-                                width={200}
-                                height={100}
-                                style={{ objectPosition: 'center', objectFit: 'scale-down' }}
-                            />
-                            <PEButton title="Zum Benutzerprofil" onClick={(): void => void router.push('/profile')} />
-                        </VStack>
+                        {data?.users.emailAddressUpdate.success && (
+                            <VStack>
+                                <p>{t('email-confirmation-success')}</p>
+                                <Link href={'/profile'} className="no-underline">
+                                    <Button style={{ color: 'rgba(31, 31, 31, 0.8)' }}>{t('back')}</Button>
+                                </Link>
+                            </VStack>
+                        )}
+
+                        {!data && (
+                            <VStack gap={32}>
+                                <Image
+                                    src="/email-confirmation.png"
+                                    alt=""
+                                    width={200}
+                                    height={100}
+                                    style={{ objectPosition: 'center', objectFit: 'scale-down' }}
+                                />
+                                <span style={{ maxWidth: 256, textAlign: 'center' }}>{t('email-confirmation-button')}</span>
+                                <PEButton title="Confirm" onClick={(): void => void confirmOneEmailAddressUpdate()} />
+                            </VStack>
+                        )}
+
+                        {(error || (data && !data.users.emailAddressUpdate.success)) && t('error')}
+
+                        {loading && <CircularProgress />}
                     </DialogContent>
                 </Dialog>
 

@@ -1,7 +1,0 @@
-mutation UserBookingRequestConfirmPaymentSetup($userId: String!, $bookingRequestId: String!) {
-    users {
-        bookingRequests(userId: $userId) {
-            success: confirmPaymentSetup(bookingRequestId: $bookingRequestId)
-        }
-    }
-}

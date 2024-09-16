@@ -2,7 +2,6 @@ import { useMutation } from '@apollo/client';
 import { AccountBox, AdminPanelSettings, Dining, Logout } from '@mui/icons-material';
 import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import Button from '@mui/material/Button';
-import classNames from 'classnames';
 import useTranslation from 'next-translate/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,7 +12,7 @@ import HStack from '../utility/hStack/HStack';
 import Spacer from '../utility/spacer/Spacer';
 import { type PEHeaderProps } from './PEHeaderProps';
 
-export default function PEHeaderDesktop({ className, signedInUser }: PEHeaderProps): ReactElement {
+export default function PEHeaderDesktop({ signedInUser }: PEHeaderProps): ReactElement {
     const { t } = useTranslation('common');
     const router = useRouter();
 
@@ -25,24 +24,16 @@ export default function PEHeaderDesktop({ className, signedInUser }: PEHeaderPro
     if (data?.users.sessions.success) void router.push('/');
 
     return (
-        <HStack
-            gap={16}
-            className={classNames('w-full max-w-screen-xl', className)}
-            style={{ alignItems: 'center', marginTop: 8 }}
-            data-element="header-desktop"
-        >
+        <HStack gap={16} className="w-full max-w-screen-xl" style={{ alignItems: 'center', marginTop: 8 }}>
             <Link href="/" className="ml-4 no-underline">
-                <Image unoptimized src="/people-eat-logo-title.png" alt="" width={203} height={46} priority />
+                <Image src="/logo.svg" alt="" width={203} height={46} priority />
             </Link>
 
             <Link href="/how-to-chef" className="no-underline">
                 <Button style={{ color: 'rgba(31, 31, 31, 0.8)', textTransform: 'none' }}>{t('how-to-become-a-chef')}</Button>
             </Link>
             <Link href="/events" className="no-underline">
-                <Button style={{ color: 'rgba(31, 31, 31, 0.8)', textTransform: 'none' }}>Events</Button>
-            </Link>
-            <Link href="/global-booking-request" className="no-underline">
-                <Button style={{ color: 'rgba(31, 31, 31, 0.8)', textTransform: 'none' }}>Individuelle Anfrage</Button>
+                <Button style={{ color: 'rgba(31, 31, 31, 0.8)', textTransform: 'none' }}>{t('Events')}</Button>
             </Link>
 
             <Spacer />
@@ -61,7 +52,6 @@ export default function PEHeaderDesktop({ className, signedInUser }: PEHeaderPro
                     >
                         {signedInUser.profilePictureUrl && (
                             <Image
-                                unoptimized
                                 width={32}
                                 height={32}
                                 alt="profile picture"
@@ -83,7 +73,7 @@ export default function PEHeaderDesktop({ className, signedInUser }: PEHeaderPro
                         <MenuItem>
                             <Link href="/profile" style={{ textDecoration: 'none', color: '#000' }}>
                                 <HStack gap={16}>
-                                    <AccountBox color="disabled" /> {t('profile-user-label')}
+                                    <AccountBox color="disabled" /> {t('header-user-profile')}
                                 </HStack>
                             </Link>
                         </MenuItem>
@@ -92,7 +82,7 @@ export default function PEHeaderDesktop({ className, signedInUser }: PEHeaderPro
                             <MenuItem>
                                 <Link href="/chef-profile" style={{ textDecoration: 'none', color: '#000' }}>
                                     <HStack gap={16}>
-                                        <Dining color="disabled" /> {t('profile-cook-label')}
+                                        <Dining color="disabled" /> {t('header-chef-profile')}
                                     </HStack>
                                 </Link>
                             </MenuItem>

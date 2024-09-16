@@ -1,10 +1,10 @@
 import { useMutation } from '@apollo/client';
+import { CircularProgress, Dialog, DialogContent } from '@mui/material';
 import useTranslation from 'next-translate/useTranslation';
 import { useState, type ReactElement } from 'react';
 import { CreateOneCookMealDocument, type MealType } from '../../../../data-source/generated/graphql';
 import { mealTypeTranslations } from '../../../../shared-domain/mealTypeTranslations';
 import { mealTypes } from '../../../../shared-domain/mealTypes';
-import { LoadingDialog } from '../../../loadingDialog/LoadingDialog';
 import PEButton from '../../../standard/buttons/PEButton';
 import { Icon } from '../../../standard/icon/Icon';
 import PEIconButton from '../../../standard/iconButton/PEIconButton';
@@ -32,22 +32,16 @@ export default function ChefProfilePageCreateMeal({
     const { t: translateMealType } = useTranslation('meal-types');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [type, setType] = useState<MealType | undefined>(defaultMealType);
+    const [type, setType] = useState<MealType>(defaultMealType ?? 'SPECIAL');
     const [image, setImage] = useState<File | undefined>(undefined);
 
-    const disabled: boolean = title === '' || type === undefined;
+    const disabled: boolean = title === '';
 
-    const [createOneCookMeal, { loading }] = useMutation(CreateOneCookMealDocument);
+    const [createOneCookMeal, { data, loading }] = useMutation(CreateOneCookMealDocument, {
+        variables: { cookId, meal: { title, description, type }, image },
+    });
 
-    function onCreateMeal(): void {
-        if (title === '' || type === undefined) return;
-
-        createOneCookMeal({ variables: { cookId, meal: { title, description, type }, image } })
-            .then(({ data }) => {
-                if (data?.cooks.meals.success) onSuccess(type);
-            })
-            .catch((error) => console.error(error));
-    }
+    if (data?.cooks.meals.success) onSuccess(type);
 
     return (
         <VStack
@@ -94,9 +88,22 @@ export default function ChefProfilePageCreateMeal({
                 <PEImagePicker onPick={setImage} onRemoveDefaultImage={(): void => setImage(undefined)} />
             </VStack>
 
-            <PEButton onClick={onCreateMeal} disabled={disabled} title={t('create-meal-button')} className="w-full" />
+            {
+                <PEButton
+                    onClick={(): void => void createOneCookMeal()}
+                    disabled={disabled}
+                    title={t('create-meal-button')}
+                    className="w-full"
+                />
+            }
 
-            <LoadingDialog isLoading={loading} />
+            {loading && (
+                <Dialog open>
+                    <DialogContent>
+                        <CircularProgress />
+                    </DialogContent>
+                </Dialog>
+            )}
         </VStack>
     );
 }

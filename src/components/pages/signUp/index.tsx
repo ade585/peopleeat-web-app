@@ -1,4 +1,5 @@
 import { useMutation } from '@apollo/client';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,7 +12,6 @@ import Link from 'next/link';
 import { useState, type ReactElement } from 'react';
 import { CreateOneUserByEmailAddressDocument } from '../../../data-source/generated/graphql';
 import useResponsive from '../../../hooks/useResponsive';
-import { LoadingDialog } from '../../loadingDialog/LoadingDialog';
 import PEButton from '../../standard/buttons/PEButton';
 import PELineButton from '../../standard/buttons/PELineButton';
 import PECheckbox from '../../standard/checkbox/PECheckbox';
@@ -70,13 +70,10 @@ export default function SignUpPage(): ReactElement {
     return (
         <HStack className="w-full h-full relative" style={{ justifyContent: 'space-between' }}>
             <VStack className="w-full" style={{ flex: 1, padding: '32px', overflowY: 'scroll' }}>
-                <form
-                    style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%', maxWidth: '400px' }}
-                    onSubmit={(event): void => event.preventDefault()}
-                >
+                <VStack style={{ gap: '32px', width: '100%', maxWidth: '400px' }}>
                     <HStack style={{ width: '100%' }}>
-                        <Link href="/">
-                            <Image unoptimized src={'/logo.svg'} alt="" width={203} height={46} />
+                        <Link href={'/'}>
+                            <Image src={'/logo.svg'} alt="" width={203} height={46} />
                         </Link>
                         <Spacer />
                     </HStack>
@@ -98,18 +95,18 @@ export default function SignUpPage(): ReactElement {
                         <div style={{ height: '1px', backgroundColor: '#F5F5F5', flex: 1 }}></div>
                     </HStack> */}
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('first-name')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('first-name')}</p>
                         <PETextField value={firstName} onChange={setFirstName} type="text" placeholder={t('first-name')} />
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('last-name')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('last-name')}</p>
                         <PETextField value={lastName} onChange={setLastName} type={'text'} placeholder={t('last-name')} />
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('date-of-birth')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('date-of-birth')}</p>
                         <div className="border-solid w-full box-border border-[1px] border-disabled p-[11px] rounded-3 hover:border-black">
                             <DatePicker
                                 sx={{ width: '100%' }}
@@ -122,8 +119,8 @@ export default function SignUpPage(): ReactElement {
                         </div>
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('phone-number')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('phone-number')}</p>
                         <PEPhoneNumberTextField
                             phoneNumber={phoneNumber.value}
                             onChange={(changedPhoneNumber, isValid): void => setPhoneNumber({ value: changedPhoneNumber, isValid })}
@@ -131,8 +128,8 @@ export default function SignUpPage(): ReactElement {
                         />
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('email-address')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('email-address')}</p>
                         <PEEmailTextField
                             email={emailAddress.value}
                             onChange={(changedEmailAddress, isValid): void => setEmailAddress({ value: changedEmailAddress, isValid })}
@@ -140,14 +137,22 @@ export default function SignUpPage(): ReactElement {
                         />
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('password')}</label>
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('password')}</p>
                         <PEPasswordTextField password={password} onChange={setPassword} placeholder={t('password')} />
                     </VStack>
 
-                    <VStack style={{ width: '100%', alignItems: 'flex-start' }} gap={16}>
-                        <label>{t('password-repeat')}</label>
-                        <PEPasswordTextField password={passwordRepeat} onChange={setPasswordRepeat} placeholder={t('password-repeat')} />
+                    <VStack style={{ width: '100%', alignItems: 'flex-start' }}>
+                        <p>{t('password-repeat')}</p>
+                        <PEPasswordTextField
+                            password={passwordRepeat}
+                            onChange={setPasswordRepeat}
+                            placeholder={t('password-repeat')}
+                            style={{
+                                border: passwordRepeat !== password && passwordRepeat !== '' ? 'red solid 2px' : 'none',
+                                borderRadius: '12px',
+                            }}
+                        />
                         {passwordRepeat !== password && passwordRepeat !== '' && (
                             <p className="text-slate-400 text-xs">Password are not matching</p>
                         )}
@@ -207,7 +212,7 @@ export default function SignUpPage(): ReactElement {
                             <PELineButton title={t('user-sign-up-login-2')} fontSize={'text-text-m'} />
                         </Link>
                     </HStack>
-                </form>
+                </VStack>
             </VStack>
 
             {isDesktop && (
@@ -245,7 +250,13 @@ export default function SignUpPage(): ReactElement {
                 </Dialog>
             )}
 
-            <LoadingDialog isLoading={loading} />
+            {loading && (
+                <Dialog open>
+                    <DialogContent>
+                        <CircularProgress />
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {(error || (data && !data.users.success)) && (
                 <Dialog open>

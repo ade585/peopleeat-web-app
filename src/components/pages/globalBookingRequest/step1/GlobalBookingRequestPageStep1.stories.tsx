@@ -2,7 +2,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import moment from 'moment';
 import { useState } from 'react';
-import { type GlobalBookingRequestPriceClassType } from '../../../../data-source/generated/graphql';
 import GlobalBookingRequestPageStep1 from './GlobalBookingRequestPageStep1';
 
 const meta: Meta<typeof GlobalBookingRequestPageStep1> = {
@@ -13,7 +12,7 @@ const meta: Meta<typeof GlobalBookingRequestPageStep1> = {
         const [childrenCount, setChildrenCount] = useState(0);
         const [dateTime, setDateTime] = useState(moment());
         const [occasion, setOccasion] = useState('');
-        const [priceClassType, setPriceClassType] = useState<GlobalBookingRequestPriceClassType>('GOURMET');
+        const [budget, setBudget] = useState('');
 
         const [addressSearchText, setAddressSearchText] = useState<string>('');
 
@@ -30,8 +29,8 @@ const meta: Meta<typeof GlobalBookingRequestPageStep1> = {
                 setDateTime={setDateTime}
                 occasion={occasion}
                 setOccasion={setOccasion}
-                priceClassType={priceClassType}
-                setPriceClassType={setPriceClassType}
+                budget={budget}
+                setBudget={setBudget}
                 // eslint-disable-next-line no-alert
                 onContinue={(): void => alert('Continue')}
             />

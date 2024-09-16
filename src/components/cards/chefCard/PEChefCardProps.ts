@@ -13,5 +13,4 @@ export interface PEChefCardProps {
     kitchens: string[];
     picturePosition?: string;
     userId?: string;
-    cookId?: string;
 }

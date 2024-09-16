@@ -1,8 +1,6 @@
-import { useMutation, useQuery } from '@apollo/client';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { useEffect, useState, type ReactElement } from 'react';
-import { CreateOneFollowingDocument, DeleteOneFollowingDocument, FindManyFollowingsDocument } from '../../../data-source/generated/graphql';
+import { type ReactElement } from 'react';
 import PEFavorite from '../../standard/favorite/PEFavorite';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
@@ -16,47 +14,19 @@ export default function PEChefCardMobile({
     rating,
     categories,
     kitchens,
-    userId,
-    cookId,
 }: PEChefCardProps): ReactElement {
     const baseClassNames = 'flex flex-col w-[93vw] active:shadow-active shadow-primary overflow-hidden rounded-3 cursor-pointer';
-    const { data } = useQuery(FindManyFollowingsDocument);
-    const followings = data?.users.me?.followings;
-    const [liked, setLike] = useState(false);
-    const [deleteFollowing] = useMutation(DeleteOneFollowingDocument);
-    const [createFollowing] = useMutation(CreateOneFollowingDocument);
-
-    const handelFollowing = (): void => {
-        if (liked) {
-            void deleteFollowing({
-                variables: { userId: userId ?? '', cookId: cookId ?? '' },
-            }).then((result) => result.data?.users.followings.success && setLike(!liked));
-            return;
-        }
-        void createFollowing({
-            variables: { userId: userId ?? '', cookId: cookId ?? '' },
-        }).then((result) => result.data?.users.followings.success && setLike(!liked));
-    };
-
-    useEffect(() => {
-        if (followings) {
-            const foundFollowing = followings.find((following) => following.cook.user.firstName === firstName);
-            if (foundFollowing) setLike(true);
-            else setLike(false);
-        }
-    }, [followings, firstName]);
 
     return (
         <div className={classNames(baseClassNames)}>
             <div className="flex gap-2 flex-col p-4 box-border">
                 <div className="flex flex-row gap-2 relative">
                     <div className="absolute top-0 right-0">
-                        <PEFavorite isFavorite={liked} onIsFavoriteChange={handelFollowing} />
+                        <PEFavorite isFavorite={false} onIsFavoriteChange={(): void => undefined} />
                     </div>
                     <div className={'rounded-2 overflow-hidden max-h-[48px] '}>
                         {profilePictureUrl && (
                             <Image
-                                unoptimized
                                 draggable={false}
                                 style={{ objectPosition: 'top', objectFit: 'cover' }}
                                 src={profilePictureUrl}

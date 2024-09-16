@@ -1,7 +1,7 @@
 export interface SignedInUser {
     userId: string;
     firstName: string;
-    profilePictureUrl?: string | null;
+    profilePictureUrl?: string;
     isCook: boolean;
     isAdmin: boolean;
 }

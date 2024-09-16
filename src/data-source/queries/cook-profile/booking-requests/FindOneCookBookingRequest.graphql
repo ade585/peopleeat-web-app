@@ -1,8 +1,5 @@
 query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {
     cooks {
-        findOne(cookId: $cookId) {
-            hasStripePayoutMethodActivated
-        }
         bookingRequests(cookId: $cookId) {
             findOne(bookingRequestId: $bookingRequestId) {
                 bookingRequestId
@@ -20,13 +17,26 @@ query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {
                 kitchenId
                 occasion
                 preparationTime
-                location {
-                    text
+                price {
+                    amount
+                    currencyCode
                 }
                 duration
                 createdAt
                 configuredMenu {
-                    ...ConfiguredMenu
+                    menuId
+                    title
+                    description
+                    greetingFromKitchen
+                    kitchenId
+                    courses {
+                        index
+                        title
+                        mealTitle
+                        mealDescription
+                        mealImageUrl
+                        mealType
+                    }
                 }
             }
         }

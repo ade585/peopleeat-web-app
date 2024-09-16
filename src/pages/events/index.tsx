@@ -1,3 +1,4 @@
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { type GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -10,14 +11,18 @@ import { Icon } from '../../components/standard/icon/Icon';
 import PEIcon from '../../components/standard/icon/PEIcon';
 import HStack from '../../components/utility/hStack/HStack';
 import VStack from '../../components/utility/vStack/VStack';
-import { createApolloClient } from '../../data-source/createApolloClient';
 import { GetProfileQueryDocument } from '../../data-source/generated/graphql';
 import useResponsive from '../../hooks/useResponsive';
 import { type SignedInUser } from '../../shared-domain/SignedInUser';
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-    const apolloClient = createApolloClient(req.headers.cookie);
-    const { data: profileData } = await apolloClient.query({ query: GetProfileQueryDocument });
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const { data: profileData } = await new ApolloClient({
+        uri: process.env.NEXT_PUBLIC_SERVER_URL,
+        credentials: 'include',
+        headers: { cookie: context.req.headers.cookie as string },
+        cache: new InMemoryCache(),
+        ssrMode: true,
+    }).query({ query: GetProfileQueryDocument });
 
     return {
         props: {
@@ -31,15 +36,8 @@ interface EventsProps {
 }
 
 function Content({ signedInUser }: EventsProps): ReactElement {
-    const { isMobile, isTablet } = useResponsive();
-    // const stripePaymentUrl: string = 'https://buy.stripe.com/14kaIm0SPdnX64gdQT';
-    const h2Styles: React.CSSProperties = {
-        color: '#18181B',
-        position: 'absolute',
-        top: isTablet ? '140px' : isMobile ? '15vh' : '120px',
-        width: isTablet ? '60%' : 'auto',
-        maxWidth: '700px',
-    };
+    const { isMobile } = useResponsive();
+    const stripePaymentUrl: string = 'https://buy.stripe.com/14kaIm0SPdnX64gdQT';
 
     return (
         <VStack className="w-full">
@@ -52,7 +50,7 @@ function Content({ signedInUser }: EventsProps): ReactElement {
 
                         {!isMobile && (
                             <div className="w-full h-[90px]">
-                                <h2 style={h2Styles}>
+                                <h2 style={{ color: '#18181B', position: 'absolute', top: '120px', maxWidth: '700px' }}>
                                     Soul Symphony: <br /> Eine transformative Verschmelzung aus Yoga, Meditation und veganer Küche
                                 </h2>
                             </div>
@@ -68,7 +66,6 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                             <HStack style={{ justifyContent: 'start', alignItems: 'center', flexWrap: 'wrap' }} gap={6}>
                                 <Link href="https://yogaloft-frankfurt.de" target="_blank">
                                     <Image
-                                        unoptimized
                                         className="cursor-pointer block"
                                         src={'/events/Yogaloft.png'}
                                         alt="YogaLoft"
@@ -79,7 +76,6 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                                 <PEIcon icon={Icon.close} edgeLength={15} />
                                 <Link href="/">
                                     <Image
-                                        unoptimized
                                         className="cursor-pointer block"
                                         src={'/people-eat-logo-title.png'}
                                         alt="PeopleEat"
@@ -90,7 +86,6 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                                 <PEIcon icon={Icon.close} edgeLength={15} />
                                 <Link href="https://grainology.de" target="_blank">
                                     <Image
-                                        unoptimized
                                         className="cursor-pointer block"
                                         src="/events/Grainology.png"
                                         alt="grainology"
@@ -100,7 +95,9 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                                 </Link>
                             </HStack>
 
-                            <PEButton title="Jetzt Buchen" disabled onClick={(): void => undefined} className="w-full" />
+                            <Link href={stripePaymentUrl} style={{ textDecoration: 'none' }} className="w-full">
+                                <PEButton title="Jetzt Buchen" onClick={(): void => undefined} />
+                            </Link>
 
                             <HStack style={{ display: 'flex', flexDirection: 'column' }}>
                                 <VStack style={{ display: 'flex', flexDirection: 'row', marginBottom: '8px' }}>
@@ -133,7 +130,7 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                                 backgroundSize: 'cover',
                             }}
                         >
-                            <Image unoptimized src="/events/group1.jpeg" alt="deco" width={800} height={520} />
+                            <Image src="/events/group1.jpeg" alt="deco" width={800} height={520} />
                         </VStack>
                     )}
                 </HStack>
@@ -158,7 +155,6 @@ function Content({ signedInUser }: EventsProps): ReactElement {
 
                     {isMobile && (
                         <Image
-                            unoptimized
                             src="/events/yoga.jpg"
                             alt="yoga"
                             height={300}
@@ -185,7 +181,6 @@ function Content({ signedInUser }: EventsProps): ReactElement {
 
                     {isMobile && (
                         <Image
-                            unoptimized
                             src="/events/meals.png"
                             alt="nice vegan meals"
                             height={200}
@@ -204,7 +199,9 @@ function Content({ signedInUser }: EventsProps): ReactElement {
                     </p>
 
                     <HStack className="w-full" style={{ alignItems: 'center' }}>
-                        <PEButton title=" Jetzt Buchen" disabled onClick={(): void => undefined} className="no-underline p-3 w-full" />
+                        <Link href={stripePaymentUrl} className="no-underline p-3 w-full" style={{ maxWidth: 512 }}>
+                            <PEButton title=" Jetzt Buchen" onClick={(): void => undefined} />
+                        </Link>
                     </HStack>
                 </VStack>
             </VStack>

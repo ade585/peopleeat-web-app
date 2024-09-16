@@ -1,11 +1,11 @@
 import { useMutation } from '@apollo/client';
 import { Button, DialogActions, DialogContentText, DialogTitle } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
-import classNames from 'classnames';
 import moment from 'moment';
 import useTranslation from 'next-translate/useTranslation';
 import Image from 'next/image';
@@ -15,8 +15,8 @@ import {
     CreateOneUserByEmailAddressDocument,
     CreateOneUserGlobalBookingRequestDocument,
     type CreateOneGlobalBookingRequestRequest,
-    type GlobalBookingRequestPriceClassType,
 } from '../../../data-source/generated/graphql';
+import useResponsive from '../../../hooks/useResponsive';
 import { type Allergy } from '../../../shared-domain/Allergy';
 import { type Category } from '../../../shared-domain/Category';
 import { type Kitchen } from '../../../shared-domain/Kitchen';
@@ -24,14 +24,12 @@ import { type Location } from '../../../shared-domain/Location';
 import { type SignedInUser } from '../../../shared-domain/SignedInUser';
 import PEFooter from '../../footer/PEFooter';
 import PEHeader from '../../header/PEHeader';
-import { LoadingDialog } from '../../loadingDialog/LoadingDialog';
 import PEBulletPoint from '../../standard/bulletPoint/PEBulletPoint';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
 import HStack from '../../utility/hStack/HStack';
 import Spacer from '../../utility/spacer/Spacer';
 import VStack from '../../utility/vStack/VStack';
-import styles from './GlobalBookingRequest.module.css';
 import { header, header02, header03 } from './points.mock';
 import GlobalBookingRequestPageStep1 from './step1/GlobalBookingRequestPageStep1';
 import GlobalBookingRequestPageStep2 from './step2/GlobalBookingRequestPageStep2';
@@ -65,6 +63,7 @@ export default function GlobalBookingRequestPage({
     const { t } = useTranslation('global-booking-request');
     const { t: homeTranslations } = useTranslation('home');
     const { t: commonTranslate } = useTranslation('common');
+    const { isDesktop } = useResponsive();
 
     const [step, setStep] = useState(0);
 
@@ -76,14 +75,13 @@ export default function GlobalBookingRequestPage({
     const [dateTime, setDateTime] = useState(moment(searchParameters.date).set('hours', 12).set('minutes', 0));
 
     const [occasion, setOccasion] = useState('');
-    const [priceClassType, setPriceClassType] = useState<GlobalBookingRequestPriceClassType>('FINE');
+    const [budget, setBudget] = useState('');
     const [message, setMessage] = useState('');
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [password, setPassword] = useState('');
 
     const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
     const [selectedKitchen, setSelectedKitchen] = useState<Kitchen | undefined>(undefined);
@@ -93,7 +91,7 @@ export default function GlobalBookingRequestPage({
     const [acceptedPrivacyPolicy, setAcceptedPrivacyPolicy] = useState(false);
 
     const [loading, setLoading] = useState(false);
-    const [completionState, setCompletionState] = useState<undefined | 'SUCCESSFUL' | 'SUCCESSFUL_NEW_USER' | 'FAILED'>(undefined);
+    const [completionState, setCompletionState] = useState<undefined | 'SUCCESSFUL' | 'FAILED'>(undefined);
 
     const globalBookingRequest: CreateOneGlobalBookingRequestRequest = {
         adultParticipants: adults,
@@ -106,7 +104,10 @@ export default function GlobalBookingRequestPage({
             text: addressSearchText,
         },
         occasion,
-        priceClassType,
+        price: {
+            amount: Number(budget),
+            currencyCode: 'EUR',
+        },
         allergyIds: selectedAllergies.map(({ allergyId }) => allergyId),
         categoryIds: selectedCategories.map(({ categoryId }) => categoryId),
         kitchenId: selectedKitchen?.kitchenId,
@@ -131,7 +132,7 @@ export default function GlobalBookingRequestPage({
                 phoneNumber: phoneNumber.replaceAll(' ', ''),
                 gender: 'NO_INFORMATION',
                 language: 'GERMAN',
-                password,
+                password: '',
                 globalBookingRequest: globalBookingRequest,
             },
         },
@@ -177,8 +178,8 @@ export default function GlobalBookingRequestPage({
                             setDateTime={setDateTime}
                             occasion={occasion}
                             setOccasion={setOccasion}
-                            priceClassType={priceClassType}
-                            setPriceClassType={setPriceClassType}
+                            budget={budget}
+                            setBudget={setBudget}
                             onContinue={(): void => setStep(1)}
                         />
                     )}
@@ -209,8 +210,6 @@ export default function GlobalBookingRequestPage({
                             setEmail={setEmail}
                             phoneNumber={phoneNumber}
                             setPhoneNumber={setPhoneNumber}
-                            password={password}
-                            setPassword={setPassword}
                             acceptedPrivacyPolicy={acceptedPrivacyPolicy}
                             setAcceptedPrivacyPolicy={setAcceptedPrivacyPolicy}
                             acceptedTermsAndConditions={acceptedTermsAndConditions}
@@ -227,7 +226,7 @@ export default function GlobalBookingRequestPage({
                                           .catch(() => setCompletionState('FAILED'))
                                           .finally(() => setLoading(false))
                                     : void createUserWithGlobalBookingRequest()
-                                          .then(({ data }) => setCompletionState(data?.users.success ? 'SUCCESSFUL_NEW_USER' : 'FAILED'))
+                                          .then(({ data }) => setCompletionState(data?.users.success ? 'SUCCESSFUL' : 'FAILED'))
                                           .catch(() => setCompletionState('FAILED'))
                                           .finally(() => setLoading(false));
                             }}
@@ -235,79 +234,80 @@ export default function GlobalBookingRequestPage({
                     )}
                 </VStack>
 
-                {/* <VStack gap={32} className={}"w-full" style={{ alignItems: 'flex-start' }}> */}
-
-                <div className={classNames(styles.hiddenOnMobile, styles.additionalInformationContainer)}>
-                    <Image unoptimized className={styles.image} src="/koch-münchen.png" alt="" width={512} height={512} />
-
-                    <VStack gap={32} style={{ alignItems: 'flex-start' }}>
-                        <h3>{t('booking-global-request-in-price')}</h3>
-                        <PEBulletPoint
-                            icon={Icon.foodBasket}
-                            title={homeTranslations('section-3-bullet-point-1-title')}
-                            text=""
-                            maxWidth={'530px'}
+                {isDesktop && (
+                    <VStack gap={32} className="w-full" style={{ alignItems: 'flex-start' }}>
+                        <Image
+                            className="w-full"
+                            src={'/picture-1.png'}
+                            alt=""
+                            width={512}
+                            height={512}
+                            style={{
+                                height: '100%',
+                                backgroundPosition: 'center',
+                                backgroundSize: 'cover',
+                                borderRadius: '16px',
+                                alignItems: 'flex-start',
+                                boxSizing: 'border-box',
+                                maxHeight: '660px',
+                            }}
                         />
-                        <PEBulletPoint
-                            icon={Icon.dinner}
-                            title={homeTranslations('section-3-bullet-point-2-title')}
-                            text=""
-                            maxWidth={'530px'}
-                        />
-                        <PEBulletPoint
-                            icon={Icon.cleanKitchen}
-                            title={homeTranslations('section-3-bullet-point-3-title')}
-                            text=""
-                            maxWidth={'530px'}
-                        />
+                        <VStack gap={32} style={{ alignItems: 'flex-start' }}>
+                            <h3>{t('booking-global-request-in-price')}</h3>
+                            <PEBulletPoint
+                                icon={Icon.foodBasket}
+                                title={homeTranslations('section-3-bullet-point-1-title')}
+                                text=""
+                                maxWidth={'530px'}
+                            />
+                            <PEBulletPoint
+                                icon={Icon.dinner}
+                                title={homeTranslations('section-3-bullet-point-2-title')}
+                                text=""
+                                maxWidth={'530px'}
+                            />
+                            <PEBulletPoint
+                                icon={Icon.cleanKitchen}
+                                title={homeTranslations('section-3-bullet-point-3-title')}
+                                text=""
+                                maxWidth={'530px'}
+                            />
+                        </VStack>
                     </VStack>
-                </div>
+                )}
             </HStack>
 
-            <Dialog open={completionState === 'SUCCESSFUL_NEW_USER'}>
-                <DialogTitle>{t('booking-global-request-pop-up')}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        <VStack style={{ alignItems: 'flex-start' }} gap={32}>
-                            <HStack style={{ width: '100%' }}>
+            {completionState === 'SUCCESSFUL' && (
+                <Dialog open>
+                    <DialogTitle>{t('booking-global-request-pop-up')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            <HStack>
                                 <PEIcon icon={Icon.confetti} edgeLength={64} />
                             </HStack>
-                            <VStack style={{ alignItems: 'flex-start' }}>
-                                <span>Du erhältst in Kürze eine Buchungsbestätigung an die von dir angegebene Email Adresse.</span>
-                            </VStack>
-                        </VStack>
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Link href="/" className="no-underline">
-                        <Button autoFocus>Zur Startseite</Button>
-                    </Link>
-                </DialogActions>
-            </Dialog>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Link href="/" className="no-underline">
+                            <Button autoFocus>{commonTranslate('back')}</Button>
+                        </Link>
+                    </DialogActions>
+                </Dialog>
+            )}
 
-            <Dialog open={completionState === 'SUCCESSFUL'}>
-                <DialogTitle>{t('booking-global-request-pop-up')}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        <VStack style={{ alignItems: 'flex-start' }} gap={32}>
-                            <HStack style={{ width: '100%' }}>
-                                <PEIcon icon={Icon.confetti} edgeLength={64} />
-                            </HStack>
-                        </VStack>
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Link href="/" className="no-underline">
-                        <Button autoFocus>Zur Startseite</Button>
-                    </Link>
-                </DialogActions>
-            </Dialog>
+            {loading && (
+                <Dialog open>
+                    <DialogContent>
+                        <CircularProgress />
+                    </DialogContent>
+                </Dialog>
+            )}
 
-            <LoadingDialog isLoading={loading} />
-
-            <Dialog open={completionState === 'FAILED'}>
-                <DialogContent>{commonTranslate('error')}</DialogContent>
-            </Dialog>
+            {completionState === 'FAILED' && (
+                <Dialog open>
+                    <DialogContent>{commonTranslate('error')}</DialogContent>
+                </Dialog>
+            )}
 
             <Spacer />
 

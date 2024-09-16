@@ -4,14 +4,12 @@ import { LocalizationProvider as MuiI18nProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment';
 import { type AppPropsType, type AppType } from 'next/dist/shared/lib/utils';
-import { clarity } from 'react-microsoft-clarity';
-import { createComplexApolloClient } from '../data-source/createApolloClient';
+import createApolloClient from '../data-source/createApolloClient';
 
 import 'moment/locale/de';
 import 'moment/locale/fr';
 import 'moment/locale/ru';
 import Script from 'next/script';
-import { useEffect } from 'react';
 import '../styles/globals.css';
 
 export const theme: Theme = createTheme({
@@ -23,17 +21,10 @@ export const theme: Theme = createTheme({
     },
 });
 
-export const apolloClient: ApolloClient<NormalizedCacheObject> = createComplexApolloClient(
-    process.env.NEXT_PUBLIC_SERVER_URL ?? '',
-    process.env.NEXT_PUBLIC_SERVER_WEB_SOCKET_URL ?? '',
-);
+export const apolloClient: ApolloClient<NormalizedCacheObject> = createApolloClient(process.env.NEXT_PUBLIC_SERVER_URL ?? '');
 
 const PeopleEatApp: AppType = ({ Component, pageProps, router }: AppPropsType) => {
-    console.log('>>>>> END 10');
-
     moment.locale(router.locale);
-
-    useEffect(() => clarity.init('l6qxwo5j7v'));
 
     return (
         <>
@@ -49,7 +40,6 @@ const PeopleEatApp: AppType = ({ Component, pageProps, router }: AppPropsType) =
                     });
                 `}
             </Script>
-
             <ApolloProvider client={apolloClient}>
                 <ThemeProvider theme={theme}>
                     <MuiI18nProvider dateAdapter={AdapterMoment} adapterLocale={router.locale}>

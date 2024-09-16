@@ -1,24 +1,20 @@
 import { useMutation } from '@apollo/client';
-import { Dialog, DialogContent } from '@mui/material';
+import { CircularProgress, Dialog, DialogContent } from '@mui/material';
 import useTranslation from 'next-translate/useTranslation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState, type ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { AssignOneSessionByEmailAddressDocument } from '../../../data-source/generated/graphql';
 import useResponsive from '../../../hooks/useResponsive';
-import { LoadingDialog } from '../../loadingDialog/LoadingDialog';
 import PEButton from '../../standard/buttons/PEButton';
 import PELineButton from '../../standard/buttons/PELineButton';
 import PECheckbox from '../../standard/checkbox/PECheckbox';
-import { Icon } from '../../standard/icon/Icon';
-import PEIcon from '../../standard/icon/PEIcon';
 import PEEmailTextField from '../../standard/textFields/PEEmailTextField';
 import PEPasswordTextField from '../../standard/textFields/PEPasswordTextField';
 import HStack from '../../utility/hStack/HStack';
 import Spacer from '../../utility/spacer/Spacer';
 import VStack from '../../utility/vStack/VStack';
-import ForgotPasswordDialog from './ForgotPasswordDialog';
 
 export default function SignInPage(): ReactElement {
     const { isDesktop } = useResponsive();
@@ -28,12 +24,6 @@ export default function SignInPage(): ReactElement {
     const [emailAddress, setEmailAddress] = useState({ value: '', isValid: false });
     const [password, setPassword] = useState('');
     const [staySignedIn, setStaySignedIn] = useState(true);
-    const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-    const [forgotPasswordDialogOpen, setForgotPasswordDialogOpen] = useState(false);
-
-    const closeErrorDialog = (): void => {
-        setErrorDialogOpen(false);
-    };
 
     const disabled = !emailAddress.isValid || password.length < 1;
 
@@ -52,23 +42,16 @@ export default function SignInPage(): ReactElement {
         router
             .push({ pathname: '/profile' })
             .then()
-            .catch((_err) => {
-                setErrorDialogOpen(true);
-            });
+            .catch((err) => console.error(err));
     }
-
-    useEffect(() => {
-        if (error || (data && !data.sessions.success)) setErrorDialogOpen(true);
-        else setErrorDialogOpen(false);
-    }, [error, data]);
 
     return (
         <HStack className="h-full">
             <VStack style={{ flex: 1, padding: '32px', overflowY: 'scroll' }}>
                 <VStack className="gap-8 lg:gap-4" style={{ width: '100%', maxWidth: '800px' }}>
                     <HStack style={{ width: '100%' }}>
-                        <Link href="/">
-                            <Image unoptimized src={'/logo.svg'} alt="" width={203} height={46} />
+                        <Link href={'/'}>
+                            <Image src={'/logo.svg'} alt="" width={203} height={46} />
                         </Link>
                         <Spacer />
                     </HStack>
@@ -118,7 +101,9 @@ export default function SignInPage(): ReactElement {
                         <PELineButton
                             title={t('forgot-password-label')}
                             fontSize={'text-text-m'}
-                            onClick={(): void => setForgotPasswordDialogOpen(true)}
+                            onClick={function (): void {
+                                throw new Error('Function not implemented.');
+                            }}
                         />
                     </div>
 
@@ -159,19 +144,17 @@ export default function SignInPage(): ReactElement {
                 </VStack>
             )}
 
-            <LoadingDialog isLoading={loading} />
-
-            <ForgotPasswordDialog open={forgotPasswordDialogOpen} onClose={(): void => setForgotPasswordDialogOpen(false)} />
+            {loading && (
+                <Dialog open>
+                    <DialogContent>
+                        <CircularProgress />
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {(error || (data && !data.sessions.success)) && (
-                <Dialog open={errorDialogOpen} className="p-3">
-                    <DialogContent>
-                        <HStack className="absolute right-2 top-2 cursor-pointer hover:shadow-orange" onClick={closeErrorDialog}>
-                            <PEIcon icon={Icon.close} />
-                        </HStack>
-                        <Spacer />
-                        <p className="mt-10">Oops! Something went wrong. Please try signing in again.</p>
-                    </DialogContent>
+                <Dialog open>
+                    <DialogContent>An error ocurred</DialogContent>
                 </Dialog>
             )}
         </HStack>

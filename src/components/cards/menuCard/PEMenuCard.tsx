@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import Image from 'next/image';
 import { type ReactElement } from 'react';
-import { formatPrice } from '../../../shared-domain/formatPrice';
 import PECarousel from '../../standard/carousel/PECarousel';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
@@ -40,7 +39,6 @@ export default function PEMenuCard({
 
                 {imageUrls.length === 1 && (
                     <Image
-                        unoptimized
                         draggable={false}
                         style={{ width: '100%', objectPosition: 'center', objectFit: 'cover' }}
                         src={imageUrls[0] as string}
@@ -54,7 +52,6 @@ export default function PEMenuCard({
                     <PECarousel
                         images={imageUrls.map((picture, index) => (
                             <Image
-                                unoptimized
                                 draggable={false}
                                 key={index}
                                 style={{ width: '100%', objectPosition: 'center', objectFit: 'cover' }}
@@ -70,11 +67,9 @@ export default function PEMenuCard({
 
             <VStack gap={8} className="w-full max-w-[325px] box-border" style={{ alignItems: 'flex-start' }}>
                 <VStack gap={8} className="h-[148px] overflow-hidden" style={{ alignItems: 'flex-start' }}>
-                    <span className="text-text-sm-bold text-preBlack" style={{ wordBreak: 'break-word' }}>
-                        {title}
-                    </span>
+                    <span className="text-text-sm-bold text-preBlack">{title}</span>
                     <span className="text-orange text-text-sm-bold">
-                        ab {formatPrice({ amount: pricePerPerson, currencyCode })} pro Person
+                        ab {pricePerPerson / 100} {currencyCode} pro Person
                     </span>
                     <span className="w-full text-text-s text-preBlack line-clamp-6">{description}</span>
                 </VStack>
@@ -92,7 +87,6 @@ export default function PEMenuCard({
                 <HStack gap={8} className="w-full">
                     {chefProfilePictureUrl && (
                         <Image
-                            unoptimized
                             width={24}
                             height={24}
                             src={chefProfilePictureUrl}

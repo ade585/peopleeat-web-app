@@ -4,12 +4,8 @@ import PEHeaderDesktop from './PEHeaderDesktop';
 import PEHeaderMobile from './PEHeaderMobile';
 import { type PEHeaderProps } from './PEHeaderProps';
 
-export default function PEHeader({ className, signedInUser }: PEHeaderProps): ReactElement | null {
+export default function PEHeader({ signedInUser, ...mobileParams }: PEHeaderProps): ReactElement {
     const { isMobile } = useResponsive();
 
-    return isMobile ? (
-        <PEHeaderMobile className={className} signedInUser={signedInUser} />
-    ) : (
-        <PEHeaderDesktop className={className} signedInUser={signedInUser} />
-    );
+    return isMobile ? <PEHeaderMobile {...mobileParams} signedInUser={signedInUser} /> : <PEHeaderDesktop signedInUser={signedInUser} />;
 }

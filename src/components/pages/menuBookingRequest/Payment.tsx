@@ -1,26 +1,13 @@
-import { useMutation } from '@apollo/client';
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { useRouter } from 'next/router';
 import { useState, type PropsWithChildren, type ReactElement } from 'react';
-import { UserBookingRequestConfirmPaymentSetupDocument } from '../../../data-source/generated/graphql';
-import { LoadingDialog } from '../../loadingDialog/LoadingDialog';
 import PEButton from '../../standard/buttons/PEButton';
 import HStack from '../../utility/hStack/HStack';
 import VStack from '../../utility/vStack/VStack';
 
-export default function Payment({
-    children,
-    bookingRequestId,
-    userId,
-}: PropsWithChildren<{ bookingRequestId: string; userId: string }>): ReactElement {
-    const router = useRouter();
+export default function Payment({ children }: PropsWithChildren): ReactElement {
     const stripe = useStripe();
     const elements = useElements();
     const [resultMessage, setResultMessage] = useState<string | undefined>();
-
-    const [confirmPaymentSetup, { loading }] = useMutation(UserBookingRequestConfirmPaymentSetupDocument, {
-        variables: { userId, bookingRequestId },
-    });
 
     async function pay(): Promise<void> {
         if (!stripe || !elements) {
@@ -36,36 +23,25 @@ export default function Payment({
         // });
         const { error } = await stripe.confirmSetup({
             elements,
-            confirmParams: { return_url: `${window.location.origin}/profile/bookings/${bookingRequestId}` },
-            redirect: 'if_required',
+            confirmParams: { return_url: `${window.location.origin}/profile?tab=4` },
         });
 
-        if (error) {
-            if (error.type === 'card_error' || error.type === 'validation_error') setResultMessage(error.message);
-            else setResultMessage('An unexpected error occurred.');
-
-            return;
-        }
-
-        confirmPaymentSetup()
-            .then(({ data }) => data?.users.bookingRequests.success && router.push(`/profile/bookings/${bookingRequestId}`))
-            .catch(() => undefined);
+        if (error.type === 'card_error' || error.type === 'validation_error') setResultMessage(error.message);
+        else setResultMessage('An unexpected error occured.');
     }
 
     return (
-        <VStack gap={32} style={{ margin: 32 }}>
+        <VStack gap={32} style={{ margin: 32, width: 800 }}>
             <HStack gap={32} style={{ width: '100%' }}>
-                {children}
+                <VStack style={{ flex: 1 }}>{children}</VStack>
                 <VStack style={{ flex: 1, alignItems: 'stretch' }}>
                     <PaymentElement id="payment-element" />
                 </VStack>
             </HStack>
 
-            <PEButton title="Fertig" onClick={(): void => void pay().then(() => console.log('called'))} />
+            <PEButton title="Fertig" onClick={(): void => void pay()} />
 
             {resultMessage && <span>{resultMessage}</span>}
-
-            <LoadingDialog isLoading={loading} />
         </VStack>
     );
 }

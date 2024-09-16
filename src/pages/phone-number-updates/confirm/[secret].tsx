@@ -8,18 +8,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import PEFooter from '../../../components/footer/PEFooter';
-import PEHeader from '../../../components/header/PEHeader';
+import PEHeaderDesktop from '../../../components/header/PEHeaderDesktop';
+import PEHeaderMobile from '../../../components/header/PEHeaderMobile';
 import PEButton from '../../../components/standard/buttons/PEButton';
 import Spacer from '../../../components/utility/spacer/Spacer';
 import VStack from '../../../components/utility/vStack/VStack';
 import { ConfirmOnePhoneNumberUpdateDocument } from '../../../data-source/generated/graphql';
+import useResponsive from '../../../hooks/useResponsive';
 
 const Index: NextPage = () => {
+    const { isMobile } = useResponsive();
     const router = useRouter();
     const secret = router.query.secret;
 
     const [confirmOnePhoneNumberUpdate, { data, loading, error }] = useMutation(ConfirmOnePhoneNumberUpdateDocument, {
-        variables: { secret: secret as string },
+        variables: { userId: '', secret: secret as string },
     });
 
     return (
@@ -35,7 +38,7 @@ const Index: NextPage = () => {
             </Head>
 
             <VStack className="w-full min-h-screen" gap={64}>
-                <PEHeader />
+                {isMobile ? <PEHeaderMobile /> : <PEHeaderDesktop />}
 
                 <Dialog open>
                     <DialogTitle>Confirm Email Address</DialogTitle>
@@ -52,7 +55,6 @@ const Index: NextPage = () => {
                         {!data && (
                             <VStack gap={32}>
                                 <Image
-                                    unoptimized
                                     src="/email-confirmation.png"
                                     alt=""
                                     width={200}

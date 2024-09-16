@@ -1,54 +1,26 @@
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { type GetServerSideProps, type NextPage } from 'next';
 import Head from 'next/head';
-import PEFooter from '../../components/footer/PEFooter';
-import PEHeader from '../../components/header/PEHeader';
-import { UserProfileNavigationTabs } from '../../components/navigation/UserProfileNavigationTabs';
-import ProfilePagePersonalTab from '../../components/pages/profile/personalTab/ProfilePagePersonalTab';
-import VStack from '../../components/utility/vStack/VStack';
-import { createApolloClient } from '../../data-source/createApolloClient';
-import {
-    GetUserProfilePersonalInformationPageDataDocument,
-    type GetSignedInUserQuery,
-    type GetUserProfilePersonalInformationPageDataQuery,
-} from '../../data-source/generated/graphql';
-import styles from './styles.module.css';
+import ProfilePage, { type ProfilePageProps } from '../../components/pages/profile';
+import { GetProfileQueryDocument } from '../../data-source/generated/graphql';
 
-interface ServerSideProps {
-    signedInUser: NonNullable<GetSignedInUserQuery['users']['signedInUser']>;
-    userProfile: NonNullable<GetUserProfilePersonalInformationPageDataQuery['users']['me']>;
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const { data } = await new ApolloClient({
+        uri: process.env.NEXT_PUBLIC_SERVER_URL,
+        credentials: 'include',
+        headers: { cookie: context.req.headers.cookie as string },
+        cache: new InMemoryCache(),
+        ssrMode: true,
+    }).query({ query: GetProfileQueryDocument });
 
-export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({ req }) => {
-    const apolloClient = createApolloClient(req.headers.cookie);
-
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-
-    try {
-        const { data } = await apolloClient.query({ query: GetUserProfilePersonalInformationPageDataDocument });
-
-        const signedInUser = data.users.signedInUser;
-
-        if (!signedInUser) throw new Error();
-
-        const userProfile = data.users.me;
-
-        if (!userProfile) throw new Error();
-
-        return {
-            props: {
-                signedInUser,
-                userProfile,
-            },
-        };
-    } catch (error) {
-        // if (!isApolloError(error as Error)) throw error;
-        // (error as ApolloError).networkError.
-        throw error;
-    }
+    return {
+        props: {
+            signedInUser: data.users.me,
+        },
+    };
 };
 
-// todo: use userProfile
-const Index: NextPage<ServerSideProps> = ({ signedInUser }) => {
+const Index: NextPage<ProfilePageProps> = ({ signedInUser }) => {
     return (
         <>
             <Head>
@@ -60,20 +32,7 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser }) => {
 
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-
-            <VStack className="w-full" gap={32}>
-                <PEHeader signedInUser={signedInUser} />
-
-                <div className={styles.bodyContainer}>
-                    <UserProfileNavigationTabs selection="PERSONAL_INFORMATION" />
-
-                    <main className={styles.mainContainer}>
-                        <ProfilePagePersonalTab userId={signedInUser.userId} />
-                    </main>
-                </div>
-
-                <PEFooter className={styles.hiddenOnMobile} />
-            </VStack>
+            <ProfilePage signedInUser={signedInUser} />
         </>
     );
 };

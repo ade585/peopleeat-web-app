@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { Alert, Dialog, DialogContent, Snackbar } from '@mui/material';
+import { Dialog, DialogContent } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import useTranslation from 'next-translate/useTranslation';
 import { useEffect, useState, type ReactElement } from 'react';
 import {
@@ -13,7 +14,6 @@ import {
 } from '../../../../data-source/generated/graphql';
 import { mealTypeTranslations } from '../../../../shared-domain/mealTypeTranslations';
 import { mealTypes } from '../../../../shared-domain/mealTypes';
-import { LoadingDialog } from '../../../loadingDialog/LoadingDialog';
 import PEButton from '../../../standard/buttons/PEButton';
 import { Icon } from '../../../standard/icon/Icon';
 import PEIconButton from '../../../standard/iconButton/PEIconButton';
@@ -29,17 +29,10 @@ export interface ChefProfilePageEditMealProps {
     mealId: string;
     onCancel: () => void;
     onSaveUpdates: () => void;
-    onDelete: () => void;
 }
 
 // eslint-disable-next-line max-statements
-export default function ChefProfilePageEditMeal({
-    cookId,
-    mealId,
-    onCancel,
-    onSaveUpdates,
-    onDelete,
-}: ChefProfilePageEditMealProps): ReactElement {
+export default function ChefProfilePageEditMeal({ cookId, mealId, onCancel, onSaveUpdates }: ChefProfilePageEditMealProps): ReactElement {
     const { t } = useTranslation('chef-profile');
     const { t: translateMealType } = useTranslation('meal-types');
 
@@ -64,12 +57,18 @@ export default function ChefProfilePageEditMeal({
         setImageUrl(meal?.imageUrl ?? '');
     }, [meal]);
 
-    const [updateMealDescription] = useMutation(UpdateCookMealDescriptionDocument, { variables: { cookId, mealId, description } });
-    const [updateMealImage] = useMutation(UpdateCookMealImageDocument, { variables: { cookId, mealId, image: image ?? undefined } });
-    const [updateMealTitle] = useMutation(UpdateCookMealTitleDocument, { variables: { cookId, mealId, title } });
-    const [updateMealType] = useMutation(UpdateCookMealTypeDocument, { variables: { cookId, mealId, type } });
-
-    const [changesWereSaved, setChangesWereSaved] = useState(false);
+    const [updateMealDescription] = useMutation(UpdateCookMealDescriptionDocument, {
+        variables: { cookId, mealId, description },
+    });
+    const [updateMealImage] = useMutation(UpdateCookMealImageDocument, {
+        variables: { cookId, mealId, image: image ?? undefined },
+    });
+    const [updateMealTitle] = useMutation(UpdateCookMealTitleDocument, {
+        variables: { cookId, mealId, title },
+    });
+    const [updateMealType] = useMutation(UpdateCookMealTypeDocument, {
+        variables: { cookId, mealId, type },
+    });
 
     function handleSaveUpdates(): void {
         if (!meal) return;
@@ -106,10 +105,6 @@ export default function ChefProfilePageEditMeal({
                 })
                 .catch((e) => console.error(e));
         }
-
-        setChangesWereSaved(true);
-        setTimeout(() => setChangesWereSaved(false), 2000);
-        // setTimeout(() => onSaveUpdates(), 1500);
     }
 
     return (
@@ -204,23 +199,19 @@ export default function ChefProfilePageEditMeal({
                                         type="secondary"
                                     />
                                     <PEButton
-                                        title={t('create-meal-dropdown-delete')}
                                         onClick={(): void =>
-                                            void deleteMeal().then((result) => result.data?.cooks.meals.success && onDelete())
+                                            void deleteMeal().then((result) => result.data?.cooks.meals.success && onSaveUpdates())
                                         }
+                                        title={t('create-meal-dropdown-delete')}
                                     />
                                 </HStack>
                             </VStack>
                         </DialogContent>
                     </Dialog>
-
-                    <LoadingDialog isLoading={loading} />
                 </>
             )}
 
-            <Snackbar open={changesWereSaved} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-                <Alert severity="success">Änderungen erfolgreich gespeichert</Alert>
-            </Snackbar>
+            {loading && <CircularProgress />}
         </VStack>
     );
 }

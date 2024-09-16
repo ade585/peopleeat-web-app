@@ -1,5 +1,5 @@
 import { useMutation } from '@apollo/client';
-import { Button, DialogActions } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -19,7 +19,6 @@ import { type Location } from '../../../shared-domain/Location';
 import { type SignedInUser } from '../../../shared-domain/SignedInUser';
 import { cookRanks } from '../../../shared-domain/cookRanks';
 import PEHeader from '../../header/PEHeader';
-import { LoadingDialog } from '../../loadingDialog/LoadingDialog';
 import PEMap from '../../map/PEMap';
 import PEButton from '../../standard/buttons/PEButton';
 import PECheckbox from '../../standard/checkbox/PECheckbox';
@@ -57,7 +56,7 @@ export default function CookSignUpPage({ signedInUser, languages }: CookSignUpPa
 
     const [maximumParticipants, setMaximumParticipants] = useState(12);
 
-    const [travelExpenses, setTravelExpenses] = useState(0.35);
+    const [travelExpenses, setTravelExpenses] = useState(0.42);
     const [maximumTravelDistance, setMaximumTravelDistance] = useState(12);
 
     const [acceptedPrivacyPolicy, setAcceptedPrivacyPolicy] = useState(false);
@@ -307,9 +306,9 @@ export default function CookSignUpPage({ signedInUser, languages }: CookSignUpPa
                             <PEIcon icon={Icon.data} />
                             <p className="my-0">{t('travel-expenses')}</p>
                         </HStack>
-                        <p className="my-0 text-end w-full text-green text-ellipsis">{travelExpenses.toFixed(2)} EUR</p>
+                        <p className="my-0 text-end w-full text-green text-ellipsis">{travelExpenses} EUR</p>
                     </HStack>
-                    <PESlider min={0} max={0.7} step={0.05} value={travelExpenses} onValueChange={setTravelExpenses} />
+                    <PESlider min={0} max={1} step={0.01} value={travelExpenses} onValueChange={setTravelExpenses} />
                 </VStack>
                 <VStack className="w-full">
                     <HStack className="w-full" style={{ justifyContent: 'space-between' }}>
@@ -328,7 +327,7 @@ export default function CookSignUpPage({ signedInUser, languages }: CookSignUpPa
                         <span>{t('maximum-customers-limit', { count: 20 })}</span>
                     </VStack>
                     <Spacer />
-                    <PECounter value={maximumParticipants} onValueChange={setMaximumParticipants} boundaries={{ min: 1, max: 20 }} />
+                    <PECounter value={maximumParticipants} onValueChange={setMaximumParticipants} />
                 </HStack>
 
                 {!signedInUser && (
@@ -412,11 +411,7 @@ export default function CookSignUpPage({ signedInUser, languages }: CookSignUpPa
                         />
                     </FormGroup>
                 </VStack>
-
-                {(signedInUser ? disabledForSignedInUser : disabledForNewUser) && (
-                    <p style={{ color: 'red' }}>{t('chef-sign-up-invalid-inputs')}</p>
-                )}
-
+                {(signedInUser ? disabledForSignedInUser : disabledForNewUser) && <p>Some fields are missing or invalid</p>}
                 <PEButton
                     className="w-full max-w-[400px]"
                     title={t('complete-button-label')}
@@ -428,23 +423,24 @@ export default function CookSignUpPage({ signedInUser, languages }: CookSignUpPa
                     <Dialog open>
                         {!signedInUser && <SignUpPageSuccessDialog emailAddress={emailAddress.value} />}
                         {signedInUser && (
-                            <>
-                                <DialogContent>
-                                    <p>{t('chef-sign-up-successful-dialog-body')}</p>
-                                </DialogContent>
-                                <DialogActions style={{ display: 'flex', justifyContent: 'center' }}>
-                                    <Link href="chef-profile" className="no-underline text-orangeActive block">
-                                        <Button autoFocus>{t('chef-sign-up-successful-dialog-primary-button')}</Button>
-                                    </Link>
-                                </DialogActions>
-                            </>
+                            <DialogContent>
+                                <Link href="chef-profile" className="no-underline">
+                                    To chef profile
+                                </Link>
+                            </DialogContent>
                         )}
                     </Dialog>
                 )}
 
-                <LoadingDialog isLoading={loading} />
+                {loading && (
+                    <Dialog open>
+                        <DialogContent>
+                            <CircularProgress />
+                        </DialogContent>
+                    </Dialog>
+                )}
 
-                {error && <Dialog open>{translateCommon('error')}</Dialog>}
+                {error && <Dialog open>An error ocurred</Dialog>}
             </VStack>
         </VStack>
     );

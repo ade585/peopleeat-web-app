@@ -4,6 +4,7 @@ import { useState, type ReactElement } from 'react';
 import {
     AddOneCookLanguageDocument,
     FindLanguagesDocument,
+    GetCookProfileQueryDocument,
     RemoveOneCookLanguageDocument,
 } from '../../../../../data-source/generated/graphql';
 import PEChoice from '../../../../standard/choice/PEChoice';
@@ -11,20 +12,20 @@ import { Icon } from '../../../../standard/icon/Icon';
 import PEIcon from '../../../../standard/icon/PEIcon';
 import PEAutoCompleteTextField from '../../../../standard/textFields/PEAutoCompleteTextField';
 import HStack from '../../../../utility/hStack/HStack';
-import Spacer from '../../../../utility/spacer/Spacer';
 import VStack from '../../../../utility/vStack/VStack';
 
 export interface ChefProfileSection5Props {
-    onInvalidate: () => void;
     chefProfile: {
         cookId: string;
         languages: { languageId: string; title: string }[];
     };
 }
 
-export default function ChefProfileSection5({ chefProfile, onInvalidate }: ChefProfileSection5Props): ReactElement {
+export default function ChefProfileSection5({ chefProfile }: ChefProfileSection5Props): ReactElement {
     const { t } = useTranslation('chef-profile');
     const [languageSearchText, setLanguageSearchText] = useState('');
+
+    const { refetch: chefRefetch } = useQuery(GetCookProfileQueryDocument, { variables: { cookId: chefProfile.cookId } });
 
     const { data, loading } = useQuery(FindLanguagesDocument);
 
@@ -43,7 +44,7 @@ export default function ChefProfileSection5({ chefProfile, onInvalidate }: ChefP
                     languageId,
                 },
             }).then((): void => {
-                onInvalidate();
+                void chefRefetch();
                 setLanguageSearchText('');
             });
         } catch (e) {
@@ -58,7 +59,9 @@ export default function ChefProfileSection5({ chefProfile, onInvalidate }: ChefP
                     cookId: chefProfile.cookId,
                     languageId,
                 },
-            }).then((): void => onInvalidate());
+            }).then((): void => {
+                void chefRefetch();
+            });
         } catch (e) {
             console.error(e);
         }
@@ -69,10 +72,7 @@ export default function ChefProfileSection5({ chefProfile, onInvalidate }: ChefP
             className="w-full bg-white shadow-primary box-border p-8 md:p-4 rounded-4"
             style={{ alignItems: 'center', justifyContent: 'flex-start' }}
         >
-            <HStack className="w-full">
-                <h2 style={{ lineHeight: 0 }}>{t('section-languages')}</h2>
-                <Spacer />
-            </HStack>
+            <p className="text-heading-ss w-full justify-start my-0">{t('section-languages')}</p>
             {data && !loading && (
                 <VStack className="w-full gap-3">
                     <VStack className="w-full mt-4" style={{ alignItems: 'flex-start', justifyContent: 'flex-start' }}>

@@ -24,17 +24,16 @@
     },
     "dependencies": {
         "@apollo/client": "^3.7.10",
-        "@emotion/react": "^11.10.6",
-        "@emotion/styled": "^11.10.6",
+        "@emotion/react": "^11.13.3",
+        "@emotion/styled": "^11.13.0",
         "@mui/base": "^5.0.0-alpha.126",
         "@mui/icons-material": "^5.11.16",
-        "@mui/material": "^5.11.14",
+        "@mui/material": "^6.1.0",
         "@mui/system": "^5.12.1",
         "@mui/x-date-pickers": "^6.10.0",
         "@stripe/react-stripe-js": "^2.1.1",
         "@stripe/stripe-js": "^1.54.1",
         "animejs": "^3.2.1",
-        "apollo-link-error": "^1.1.13",
         "apollo-upload-client": "^17.0.0",
         "classnames": "^2.3.2",
         "compressorjs": "^1.2.1",
@@ -49,9 +48,11 @@
         "react-dom": "18.2.0",
         "react-hook-form": "^7.48.2",
         "react-image-crop": "^10.1.5",
+        "react-material-ui-carousel": "^3.4.2",
         "react-microsoft-clarity": "^1.2.0",
         "use-file-picker": "^1.7.0",
-        "validatorjs": "^3.22.1"
+        "validatorjs": "^3.22.1",
+        "react-material-ui-carousel": ""
     },
     "devDependencies": {
         "@babel/core": "^7.22.1",

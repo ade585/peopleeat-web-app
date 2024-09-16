@@ -1,6 +1,6 @@
-mutation ConfirmOnePhoneNumberUpdate($secret: String!) {
+mutation ConfirmOnePhoneNumberUpdate($userId: String!, $secret: String!) {
     users {
-        phoneNumberUpdate(userId: "") {
+        phoneNumberUpdate(userId: $userId) {
             success: confirm(secret: $secret)
         }
     }

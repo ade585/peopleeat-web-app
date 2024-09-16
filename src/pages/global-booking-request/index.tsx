@@ -1,14 +1,19 @@
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import moment from 'moment';
 import { type GetServerSideProps, type NextPage } from 'next';
 import useTranslation from 'next-translate/useTranslation';
 import Head from 'next/head';
 import GlobalBookingRequestPage, { type GlobalBookingRequestPageProps } from '../../components/pages/globalBookingRequest';
-import { createApolloClient } from '../../data-source/createApolloClient';
 import { GetGlobalBookingRequestPageDataDocument } from '../../data-source/generated/graphql';
 
 export const getServerSideProps: GetServerSideProps = async ({ query, req }) => {
-    const apolloClient = createApolloClient(req.headers.cookie);
-    const { data } = await apolloClient.query({ query: GetGlobalBookingRequestPageDataDocument });
+    const { data } = await new ApolloClient({
+        uri: process.env.NEXT_PUBLIC_SERVER_URL,
+        credentials: 'include',
+        headers: { cookie: req.headers.cookie as string },
+        cache: new InMemoryCache(),
+        ssrMode: true,
+    }).query({ query: GetGlobalBookingRequestPageDataDocument });
 
     const { address, latitude, longitude, adults, children, date } = query;
 

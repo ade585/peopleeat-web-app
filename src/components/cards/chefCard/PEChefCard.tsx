@@ -1,10 +1,9 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import classNames from 'classnames';
 import useTranslation from 'next-translate/useTranslation';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import { useEffect, useState, type ReactElement } from 'react';
-import { CreateOneFollowingDocument, DeleteOneFollowingDocument, FindManyFollowingsDocument } from '../../../data-source/generated/graphql';
+import { FindManyFollowingsDocument } from '../../../data-source/generated/graphql';
 import PEFavorite from '../../standard/favorite/PEFavorite';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
@@ -20,7 +19,6 @@ export default function PEChefCard({
     kitchens,
     picturePosition = 'center',
     userId,
-    cookId,
 }: PEChefCardProps): ReactElement {
     const baseClassNames =
         'flex flex-col active:shadow-active hover:shadow-primary overflow-hidden border-solid border-border border-[1px] rounded-3 cursor-pointer';
@@ -28,25 +26,9 @@ export default function PEChefCard({
     const { data } = useQuery(FindManyFollowingsDocument);
     const followings = data?.users.me?.followings;
     const { t } = useTranslation('common');
-    const router = useRouter();
 
     const [liked, setLike] = useState(false);
-    const [deleteFollowing] = useMutation(DeleteOneFollowingDocument);
-    const [createFollowing] = useMutation(CreateOneFollowingDocument);
-
-    const handelFollowing = (): void => {
-        if (liked) {
-            void deleteFollowing({
-                variables: { userId: userId ?? '', cookId: cookId ?? '' },
-            }).then((result) => result.data?.users.followings.success && setLike(!liked));
-            if (window.location.href.includes('tab')) router.reload();
-            return;
-        }
-        void createFollowing({
-            variables: { userId: userId ?? '', cookId: cookId ?? '' },
-        }).then((result) => result.data?.users.followings.success && setLike(!liked));
-        if (window.location.href.includes('tab')) router.reload();
-    };
+    // const [deleteFollowing] = useMutation(DeleteOneFollowingDocument);
 
     useEffect(() => {
         if (followings) {
@@ -57,14 +39,23 @@ export default function PEChefCard({
     }, [followings, firstName]);
 
     return (
-        <div className={classNames(baseClassNames, width, 'h-[450px]')}>
+        <div className={classNames(baseClassNames, width)}>
             <div className="relative">
                 <div className="absolute top-[12px] right-[12px]">
-                    <PEFavorite isFavorite={liked} onIsFavoriteChange={handelFollowing} />
+                    <PEFavorite
+                        isFavorite={liked}
+                        // onIsFavoriteChange={(): void => {
+                        //     if (liked) {
+                        //         void deleteFollowing({
+                        //             variables: { userId: userId, cookId: cookId },
+                        //         }).then((result) => result.data?.users.followings.success && setLike(!liked));
+                        //     }
+                        // }}
+                        onIsFavoriteChange={(): void => setLike(!liked)}
+                    />
                 </div>
                 {profilePictureUrl && (
                     <Image
-                        unoptimized
                         draggable={false}
                         style={{ width: '100%', objectPosition: picturePosition, objectFit: 'cover' }}
                         src={profilePictureUrl}

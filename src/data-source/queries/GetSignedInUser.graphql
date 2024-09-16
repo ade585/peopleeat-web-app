@@ -1,7 +1,0 @@
-query GetSignedInUser {
-    users {
-        signedInUser: me {
-            ...SignedInUser
-        }
-    }
-}

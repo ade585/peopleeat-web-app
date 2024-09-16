@@ -41,27 +41,18 @@ export default function PEImageClipper({ imagePath, onSuccess }: PEImageClipperP
                     const image = imgRef.current;
 
                     // draw the image on the canvas
+
                     if (image) {
                         const scaleX = image.naturalWidth / image.width;
                         const scaleY = image.naturalHeight / image.height;
                         const ctx = canvas.getContext('2d');
                         const pixelRatio = window.devicePixelRatio;
-
-                        // Calculate the canvas size while ensuring it doesn't exceed Safari's limits
-                        // Adjust as needed
-                        const maxCanvasSize = 4096;
-                        const canvasWidth = Math.min(crop.width * pixelRatio * scaleX, maxCanvasSize);
-                        const canvasHeight = Math.min(crop.height * pixelRatio * scaleY, maxCanvasSize);
-                        canvas.width = canvasWidth;
-                        canvas.height = canvasHeight;
+                        canvas.width = crop.width * pixelRatio * scaleX;
+                        canvas.height = crop.height * pixelRatio * scaleY;
 
                         if (ctx) {
                             ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                             ctx.imageSmoothingQuality = 'high';
-
-                            // Calculate the size of the cropped region within the canvas
-                            const scaledCropWidth = (crop.width * scaleX * canvasWidth) / (crop.width * pixelRatio * scaleX);
-                            const scaledCropHeight = (crop.height * scaleY * canvasHeight) / (crop.height * pixelRatio * scaleY);
 
                             ctx.drawImage(
                                 image,
@@ -71,13 +62,13 @@ export default function PEImageClipper({ imagePath, onSuccess }: PEImageClipperP
                                 crop.height * scaleY,
                                 0,
                                 0,
-                                scaledCropWidth,
-                                scaledCropHeight,
+                                crop.width * scaleX,
+                                crop.height * scaleY,
                             );
                         }
 
-                        // Convert the canvas to a base64 image
-                        const base64Image = canvas.toDataURL('image/png');
+                        // can be changed to jpeg/jpg etc
+                        const base64Image: string = canvas.toDataURL('image/png');
 
                         if (base64Image) {
                             const fileType = base64Image.split(';')[0]?.split(':')[1];

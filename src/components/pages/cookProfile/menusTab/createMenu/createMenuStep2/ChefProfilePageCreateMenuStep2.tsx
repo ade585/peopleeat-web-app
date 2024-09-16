@@ -4,7 +4,7 @@ import Divider from '@mui/material/Divider';
 import useTranslation from 'next-translate/useTranslation';
 import { useState, type ReactElement } from 'react';
 import { FindCookMealsDocument } from '../../../../../../data-source/generated/graphql';
-import PEMealCardDesktop from '../../../../../cards/mealCard/PEMealCardDesktop';
+import PEMealCard from '../../../../../cards/mealCard/PEMealCard';
 import PEButton from '../../../../../standard/buttons/PEButton';
 import { Icon } from '../../../../../standard/icon/Icon';
 import PEIcon from '../../../../../standard/icon/PEIcon';
@@ -15,7 +15,7 @@ import PETextField from '../../../../../standard/textFields/PETextField';
 import HStack from '../../../../../utility/hStack/HStack';
 import VStack from '../../../../../utility/vStack/VStack';
 import CreateCookMenuCourse, { type CreateCookMenuCourseDto } from './CreateCookMenuCourse';
-import UpdateCookMenuCourseDialog from './UpdateCookMenuCourseDialog';
+import UpdateCookMenuCourse from './UpdateCookMenuCourse';
 
 export interface ChefProfilePageCreateMenusStep2Props {
     cookId: string;
@@ -83,12 +83,7 @@ export default function ChefProfilePageCreateMenusStep2({
                             active={greetingFromKitchen === undefined || greetingFromKitchen === null}
                         />
                         {greetingFromKitchen !== undefined && (
-                            <PETextField
-                                type={'text'}
-                                value={greetingFromKitchen ?? undefined}
-                                placeholder="Beschreibung des Gerichts (optional)"
-                                onChange={setGreetingFromKitchen}
-                            />
+                            <PETextField type={'text'} value={greetingFromKitchen ?? undefined} onChange={setGreetingFromKitchen} />
                         )}
                     </HStack>
                 </VStack>
@@ -143,19 +138,14 @@ export default function ChefProfilePageCreateMenusStep2({
                                         setActiveCourse(course);
                                     }}
                                 >
-                                    <PEMealCardDesktop
-                                        imageUrl={meal.imageUrl ?? undefined}
-                                        title={meal.title}
-                                        description={meal.description}
-                                    />
+                                    <PEMealCard imageUrl={meal.imageUrl ?? undefined} title={meal.title} description={meal.description} />
                                 </div>
                             ))}
                         </HStack>
 
                         {showUpdateCourseDialog && activeCourse && activeCourseIndex !== null && (
-                            <UpdateCookMenuCourseDialog
+                            <UpdateCookMenuCourse
                                 open={showUpdateCourseDialog}
-                                title={course.title}
                                 meals={meals.filter(
                                     (meal) => !activeCourse.mealOptions.find((courseMeal) => courseMeal.mealId === meal.mealId),
                                 )}

@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { type ReactElement } from 'react';
-import { formatPrice } from '../../../shared-domain/formatPrice';
 import { Icon } from '../../standard/icon/Icon';
 import PEIcon from '../../standard/icon/PEIcon';
 import { type PEMenuCardProps } from './PEMenuCardProps';
@@ -26,7 +25,6 @@ export default function PEMenuCardMobile({
                 <div className="flex rounded-3 overflow-hidden min-w-[120px] h-[120px] justify-center items-center bg-base">
                     {Boolean(imageUrls.length) && (
                         <Image
-                            unoptimized
                             draggable={false}
                             src={imageUrls[0] as string}
                             alt={title}
@@ -38,11 +36,9 @@ export default function PEMenuCardMobile({
                     {Boolean(!imageUrls.length) && <PEIcon icon={Icon.food} edgeLength={52} />}
                 </div>
                 <div className="flex flex-col gap-2">
-                    <span className="text-text-sm-bold text-preBlack" style={{ wordBreak: 'break-word' }}>
-                        {title}
-                    </span>
+                    <span className="text-text-sm-bold text-preBlack">{title}</span>
                     <span className="text-orange text-text-sm-bold">
-                        ab {formatPrice({ amount: pricePerPerson, currencyCode })} pro Person
+                        ab {pricePerPerson / 100} {currencyCode} pro Person
                     </span>
                     <span className="text-text-s text-preBlack line-clamp-4">{description}</span>
                 </div>
@@ -60,7 +56,6 @@ export default function PEMenuCardMobile({
                 <div className="flex flex-row items-center gap-2 overflow-hidden">
                     {chefProfilePictureUrl && (
                         <Image
-                            unoptimized
                             draggable={false}
                             width={24}
                             height={24}

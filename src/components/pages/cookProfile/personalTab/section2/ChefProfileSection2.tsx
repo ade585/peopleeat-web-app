@@ -7,7 +7,6 @@ import { Icon } from '../../../../standard/icon/Icon';
 import PEIconButton from '../../../../standard/iconButton/PEIconButton';
 import PEMultiLineTextField from '../../../../standard/textFields/PEMultiLineTextField';
 import HStack from '../../../../utility/hStack/HStack';
-import Spacer from '../../../../utility/spacer/Spacer';
 import VStack from '../../../../utility/vStack/VStack';
 
 export interface ChefProfileSection2Props {
@@ -45,9 +44,8 @@ export default function ChefProfileSection2({ chefBiography, cookId }: ChefProfi
             className="w-full bg-white shadow-primary box-border p-8 md:p-4 rounded-4"
             style={{ alignItems: 'center', justifyContent: 'flex-start' }}
         >
-            <HStack className="w-full">
-                <h2 style={{ lineHeight: 0 }}>Bio</h2>
-                <Spacer />
+            <HStack className="w-full md:mb-2">
+                <p className="text-heading-ss w-full justify-start my-0">Bio</p>
                 {isMobile && (
                     <>
                         {edit && (
@@ -75,7 +73,7 @@ export default function ChefProfileSection2({ chefBiography, cookId }: ChefProfi
 
             <VStack className="w-full gap-3">
                 <HStack className="w-full" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                    <p className="my-0">{t('section-bio-description')}</p>
+                    <p className="my-0 text-text-sm-bold">{t('section-bio-description')}</p>
                     {!isMobile && (
                         <>
                             {edit && (

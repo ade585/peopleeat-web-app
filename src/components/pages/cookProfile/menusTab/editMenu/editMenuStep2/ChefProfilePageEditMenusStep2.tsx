@@ -1,9 +1,8 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { Alert, Menu, MenuItem, Snackbar } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import useTranslation from 'next-translate/useTranslation';
 import { useEffect, useState, type ReactElement } from 'react';
 import {
-    CreateManyCookMenuCourseMealOptionsDocument,
     CreateOneCookMenuCourseDocument,
     DeleteOneCookMenuCourseDocument,
     DeleteOneCookMenuCourseMealOptionDocument,
@@ -11,7 +10,7 @@ import {
     UpdateCookMenuGreetingFromKitchenDocument,
     type MealType,
 } from '../../../../../../data-source/generated/graphql';
-import PEMealCardDesktop from '../../../../../cards/mealCard/PEMealCardDesktop';
+import PEMealCard from '../../../../../cards/mealCard/PEMealCard';
 import PEButton from '../../../../../standard/buttons/PEButton';
 import { Icon } from '../../../../../standard/icon/Icon';
 import PEIcon from '../../../../../standard/icon/PEIcon';
@@ -20,8 +19,9 @@ import PETabItem from '../../../../../standard/tabItem/PETabItem';
 import PETextField from '../../../../../standard/textFields/PETextField';
 import HStack from '../../../../../utility/hStack/HStack';
 import VStack from '../../../../../utility/vStack/VStack';
-import CreateCookMenuCourse, { type MenuEntity } from '../../createMenu/createMenuStep2/CreateCookMenuCourse';
-import UpdateCookMenuCourseDialog from '../../createMenu/createMenuStep2/UpdateCookMenuCourseDialog';
+import { type MenuEntity } from '../../ChefProfilePageMenusTab';
+import CreateCookMenuCourse from '../../createMenu/createMenuStep2/CreateCookMenuCourse';
+import UpdateCookMenuCourse from '../../createMenu/createMenuStep2/UpdateCookMenuCourse';
 
 export interface ChefProfilePageEditMenusStep2Props {
     menu: MenuEntity;
@@ -60,28 +60,8 @@ export default function ChefProfilePageEditMenusStep2({
         }[]
     >(menu.courses);
 
-    const [courseToUpdate, setCourseToUpdate] = useState<
-        | undefined
-        | {
-              courseId: string;
-              index: number;
-              title: string;
-              mealOptions:
-                  | {
-                        index: number;
-                        meal: {
-                            mealId: string;
-                            title: string;
-                            description: string;
-                            imageUrl?: string | null;
-                            type: MealType;
-                            createdAt: Date;
-                        };
-                    }[];
-          }
-    >();
-
     const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
+    const [showUpdateCourseDialog, setShowUpdateCourseDialog] = useState(false);
 
     const { data } = useQuery(FindCookMealsDocument, { variables: { cookId } });
     const meals = data?.cooks.meals.findMany ?? [];
@@ -93,13 +73,10 @@ export default function ChefProfilePageEditMenusStep2({
     const [createCourse] = useMutation(CreateOneCookMenuCourseDocument);
     const [deleteCourse] = useMutation(DeleteOneCookMenuCourseDocument);
     const [deleteMealOption] = useMutation(DeleteOneCookMenuCourseMealOptionDocument);
-    const [createMealOptions] = useMutation(CreateManyCookMenuCourseMealOptionsDocument);
 
     const [selectedMealOption, setSelectedMealOption] = useState<{ courseId: string; mealId: string } | undefined>();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
-
-    const [changesHaveBeenSaved, setChangesHaveBeenSaved] = useState(false);
 
     function handleSaveUpdates(): void {
         if (menu.greetingFromKitchen !== greetingFromKitchen) {
@@ -107,16 +84,11 @@ export default function ChefProfilePageEditMenusStep2({
                 .then((result) => result.data?.cooks.menus.success && onChangesApplied())
                 .catch((e) => console.error(e));
         }
-
-        setChangesHaveBeenSaved(true);
-        setTimeout(() => setChangesHaveBeenSaved(false), 2000);
     }
 
     useEffect(() => {
         setGreetingFromKitchen(menu.greetingFromKitchen ?? undefined);
-        const sortedCourses = [...menu.courses];
-        sortedCourses.sort((courseA, courseB) => courseA.index - courseB.index);
-        setCourses(sortedCourses);
+        setCourses(menu.courses);
     }, [menu]);
 
     return (
@@ -124,7 +96,7 @@ export default function ChefProfilePageEditMenusStep2({
             <VStack gap={32} className="w-full" style={{ alignItems: 'flex-start' }}>
                 {editMode && (
                     <VStack className="w-full" style={{ alignItems: 'flex-start' }}>
-                        <p className="text-heading-m">{t('create-menu-greeting-form-kitchen-label')}</p>
+                        <p className="text-text-m-bold">{t('create-menu-greeting-form-kitchen-label')}</p>
 
                         <HStack className="gap-4 w-full h-14" style={{ alignItems: 'center', justifyContent: 'flex-start' }}>
                             <PETabItem
@@ -139,7 +111,7 @@ export default function ChefProfilePageEditMenusStep2({
                             />
                             {greetingFromKitchen !== undefined && (
                                 <PETextField
-                                    type="text"
+                                    type={'text'}
                                     value={greetingFromKitchen ?? undefined}
                                     disabled={!editMode}
                                     onChange={setGreetingFromKitchen}
@@ -151,15 +123,15 @@ export default function ChefProfilePageEditMenusStep2({
 
                 {!editMode && menu.greetingFromKitchen && (
                     <VStack className="w-full">
-                        <p className="w-full mb-4 text-heading-m my-0">{t('greeting-from-kitchen')}</p>
-                        <PETextField type="text" value={greetingFromKitchen} disabled={!editMode} onChange={setGreetingFromKitchen} />
+                        <p className="w-full mb-4 text-text-m-bold my-0">{t('greeting-from-kitchen')}</p>
+                        <PETextField type={'text'} value={greetingFromKitchen} disabled={!editMode} onChange={setGreetingFromKitchen} />
                     </VStack>
                 )}
 
                 {courses.map((course, index) => (
                     <VStack key={index} className="w-full" gap={16} style={{ alignItems: 'flex-start' }}>
                         <HStack gap={16} className="w-full" style={{ alignItems: 'center' }}>
-                            {!editMode && <p className="w-full text-heading-m mb-4 my-0">{course.title}</p>}
+                            {!editMode && <p className="w-full mb-4 text-text-m-bold my-0">{course.title}</p>}
                             {editMode && (
                                 <>
                                     <PETextField
@@ -207,7 +179,7 @@ export default function ChefProfilePageEditMenusStep2({
                         <HStack className="w-full py-4 box-border" gap={16} style={{ flexWrap: 'wrap', justifyContent: 'flex-start' }}>
                             {editMode && (
                                 <VStack
-                                    onClick={(): void => setCourseToUpdate(course)}
+                                    onClick={(): void => undefined}
                                     className="items-center w-[388px] h-[140px] border-orange border-[1px] border-solid hover:cursor-pointer select-none hover:shadow-primary active:shadow-active delay-100 justify-center rounded-4"
                                 >
                                     <PEIcon icon={Icon.plusOrange} />
@@ -224,7 +196,7 @@ export default function ChefProfilePageEditMenusStep2({
                                         setSelectedMealOption({ courseId: course.courseId, mealId: mealOption.meal.mealId });
                                     }}
                                 >
-                                    <PEMealCardDesktop
+                                    <PEMealCard
                                         imageUrl={mealOption.meal.imageUrl ?? undefined}
                                         title={mealOption.meal.title}
                                         description={mealOption.meal.description}
@@ -232,6 +204,24 @@ export default function ChefProfilePageEditMenusStep2({
                                 </div>
                             ))}
                         </HStack>
+
+                        {showUpdateCourseDialog && (
+                            <UpdateCookMenuCourse
+                                open={showUpdateCourseDialog}
+                                meals={meals.filter(
+                                    (meal) => !course.mealOptions.find((mealOption) => mealOption.meal.mealId === meal.mealId),
+                                )}
+                                onSuccess={(_updatedCourse): void => {
+                                    // setCourses([...courses.slice(0, index), updatedCourse, ...courses.slice(index + 1)]);
+                                    setShowUpdateCourseDialog(false);
+                                }}
+                                onCancel={(): void => {
+                                    setShowUpdateCourseDialog(false);
+                                }}
+                                // course.mealOptions.map((mealOption) => [mealOption.meal.mealId, mealOption.meal])
+                                selectedCourseMeals={new Map()}
+                            />
+                        )}
 
                         {open && selectedMealOption && (
                             <Menu
@@ -277,7 +267,7 @@ export default function ChefProfilePageEditMenusStep2({
 
                 {showCreateCourseDialog && (
                     <CreateCookMenuCourse
-                        open
+                        open={showCreateCourseDialog}
                         meals={meals}
                         onSuccess={(course): void => {
                             void createCourse({
@@ -285,7 +275,7 @@ export default function ChefProfilePageEditMenusStep2({
                                     cookId,
                                     menuId: menu.menuId,
                                     request: {
-                                        index: menu.courses.length,
+                                        index: 0,
                                         title: course.title,
                                         mealOptions: course.mealOptions.map(({ mealId }, mealIndex) => ({ index: mealIndex, mealId })),
                                     },
@@ -297,55 +287,19 @@ export default function ChefProfilePageEditMenusStep2({
                     />
                 )}
 
-                {!!courseToUpdate && (
-                    <UpdateCookMenuCourseDialog
-                        open
-                        title={courseToUpdate.title}
-                        meals={meals.filter(
-                            (meal) => !courseToUpdate.mealOptions.find((mealOption) => mealOption.meal.mealId === meal.mealId),
-                        )}
-                        onSuccess={(course): void => {
-                            setCourseToUpdate(undefined);
-                            createMealOptions({
-                                variables: {
-                                    menuId: menu.menuId,
-                                    cookId,
-                                    courseId: courseToUpdate.courseId,
-                                    mealOptions: course.mealOptions.map((mealOption, index) => ({
-                                        index: courseToUpdate.mealOptions.length + index,
-                                        mealId: mealOption.mealId,
-                                    })),
-                                },
-                            })
-                                .then((result) => {
-                                    if (result.data?.cooks.menus.courses.mealOptions.success) onChangesApplied();
-                                })
-                                .catch(() => undefined);
-                        }}
-                        onCancel={(): void => {
-                            setCourseToUpdate(undefined);
-                        }}
-                        selectedCourseMeals={new Map()}
-                    />
-                )}
-
                 <HStack className="w-full" gap={16} style={{ marginTop: 32 }}>
                     {!editMode && <PEButton title={commonTranslations('edit')} onClick={(): void => setEditMode(true)} type="secondary" />}
                     {editMode && (
                         <>
                             <PEButton title={commonTranslations('cancel')} onClick={(): void => setEditMode(false)} type="secondary" />
                             <PEButton
-                                title={t('save-changes')}
+                                title={commonTranslations('booking-global-requests')}
                                 onClick={handleSaveUpdates}
                                 disabled={(menu.greetingFromKitchen ?? undefined) === greetingFromKitchen}
                             />
                         </>
                     )}
                 </HStack>
-
-                <Snackbar open={changesHaveBeenSaved} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-                    <Alert severity="success">Änderungen erfolgreich gespeichert</Alert>
-                </Snackbar>
             </VStack>
         </VStack>
     );

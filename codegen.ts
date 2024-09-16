@@ -4,10 +4,7 @@ const config: CodegenConfig = {
     schema: 'http://localhost:4000/graphql',
     documents: ['src/data-source/queries/**/*.graphql'],
     hooks: {
-        afterAllFileWrite: [
-            'prettier --write ./src/data-source/generated/*',
-            'eslint ./src/data-source/generated/* --ext js,cjs,mjs,jsx,ts,cts,mts,tsx --fix',
-        ],
+        afterAllFileWrite: ['prettier --write ./src/data-source/generated/*'],
     },
     generates: {
         './src/data-source/generated/': {

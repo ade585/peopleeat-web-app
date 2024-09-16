@@ -15,8 +15,6 @@ import * as types from './graphql';
 const documents = {
     'mutation AssignOneSessionByEmailAddress($request: CreateOneSessionByEmailAddressRequest!) {\n  sessions {\n    success: assignOneByEmailAddress(request: $request)\n  }\n}':
         types.AssignOneSessionByEmailAddressDocument,
-    'subscription BookingRequestChatMessageCreations($bookingRequestId: String!) {\n  bookingRequestChatMessageCreations(bookingRequestId: $bookingRequestId) {\n    ...ChatMessage\n  }\n}':
-        types.BookingRequestChatMessageCreationsDocument,
     'mutation CreateOneUserByEmailAddress($request: CreateOneUserByEmailAddressRequest!, $profilePicture: Upload) {\n  users {\n    success: createOneByEmailAddress(\n      request: $request\n      profilePicture: $profilePicture\n    )\n  }\n}':
         types.CreateOneUserByEmailAddressDocument,
     'mutation CreateOneUserGlobalBookingRequest($userId: String!, $request: CreateOneGlobalBookingRequestRequest!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      success: createOne(request: $request)\n    }\n  }\n}':
@@ -33,6 +31,12 @@ const documents = {
         types.FindLatestPublicPrivacyPolicyUpdateDocument,
     'query FindLatestPublicTermsUpdate {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicTermsUpdates {\n    findLatest {\n      termsUpdateId\n      englishText\n      germanText\n      createdAt\n    }\n  }\n}':
         types.FindLatestPublicTermsUpdateDocument,
+    'query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n        createdAt\n      }\n    }\n  }\n}':
+        types.FindManyAdminsDocument,
+    'query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}':
+        types.FindManyCooksDocument,
+    'query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}':
+        types.FindManyUsersDocument,
     'query GetCookBookingRequestPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findOne(cookId: $cookId) {\n      cookId\n      languages {\n        languageId\n        title\n      }\n      location {\n        latitude\n        longitude\n      }\n      maximumTravelDistance\n      maximumPrice\n      minimumPrice\n      travelExpenses\n      rank\n      user {\n        firstName\n        profilePictureUrl\n      }\n      maximumParticipants\n      minimumParticipants\n      createdAt\n    }\n  }\n  categories {\n    findAll {\n      categoryId\n      title\n    }\n  }\n  kitchens {\n    findAll {\n      kitchenId\n      title\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n}':
         types.GetCookBookingRequestPageDataDocument,
     'query GetCookSignUpPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  languages {\n    findAll {\n      languageId\n      title\n    }\n  }\n}':
@@ -41,40 +45,21 @@ const documents = {
         types.GetCreateMenuPageDataDocument,
     'query GetGlobalBookingRequestPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  categories {\n    findAll {\n      categoryId\n      title\n    }\n  }\n  kitchens {\n    findAll {\n      kitchenId\n      title\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n}':
         types.GetGlobalBookingRequestPageDataDocument,
-    'query GetHomePageDataDocument {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findHeroes {\n      cookId\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      rank\n      biography\n      location {\n        latitude\n        longitude\n      }\n      city\n      travelExpenses\n      createdAt\n    }\n  }\n  publicMenus {\n    findHeroes {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n}':
-        types.GetHomePageDataDocumentDocument,
     'query GetMenuBookingRequestPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n        city\n        travelExpenses\n        maximumTravelDistance\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}':
         types.GetMenuBookingRequestPageDataDocument,
     'query GetPublicCookPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      rank\n      biography\n      location {\n        latitude\n        longitude\n      }\n      city\n      travelExpenses\n      createdAt\n      languages {\n        languageId\n        title\n      }\n      menus {\n        title\n        pricePerChild\n        pricePerAdult\n        preparationTime\n        menuId\n        kitchen {\n          kitchenId\n          title\n        }\n        basePrice\n        basePriceCustomers\n        categories {\n          categoryId\n          title\n        }\n        imageUrls\n        currencyCode\n        description\n        greetingFromKitchen\n        createdAt\n      }\n    }\n  }\n  categories {\n    findAll {\n      categoryId\n      title\n    }\n  }\n  kitchens {\n    findAll {\n      kitchenId\n      title\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n}':
         types.GetPublicCookPageDataDocument,
     'query GetPublicCooksPageData($request: FindManyPublicCooksRequest!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      rank\n      biography\n      location {\n        latitude\n        longitude\n      }\n      city\n      travelExpenses\n      createdAt\n    }\n  }\n}':
         types.GetPublicCooksPageDataDocument,
-    'query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      greetingFromKitchen\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        maximumTravelDistance\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}':
+    'query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}':
         types.GetPublicMenuPageDataDocument,
     'query GetPublicMenusPageData($request: FindManyPublicMenusRequest!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findMany(request: $request) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n}':
         types.GetPublicMenusPageDataDocument,
-    'query GetSignedInUser {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n}': types.GetSignedInUserDocument,
     'mutation UpdateSessionCookieSettings($request: SessionCookieSettingsInput!) {\n  sessions {\n    success: updateCookieSettings(request: $request)\n  }\n}':
         types.UpdateSessionCookieSettingsDocument,
-    'query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n      }\n    }\n  }\n}':
-        types.FindManyAdminsDocument,
-    'query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}':
-        types.FindManyCooksDocument,
-    'query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}':
-        types.FindManyUsersDocument,
-    'query GetAdministrationBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  bookingRequests {\n    findMany {\n      bookingRequestId\n      globalBookingRequestId\n      adultParticipants\n      children\n      cookAccepted\n      userAccepted\n      occasion\n      dateTime\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      cook {\n        cookId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        rank\n        city\n      }\n      price {\n        amount\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n    }\n  }\n}':
-        types.GetAdministrationBookingRequestsPageDataDocument,
-    'query GetAdministrationGlobalBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  globalBookingRequests {\n    findMany {\n      globalBookingRequestId\n      occasion\n      dateTime\n      adultParticipants\n      children\n      priceClass {\n        type\n        min\n        max\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      createdAt\n    }\n  }\n}':
-        types.GetAdministrationGlobalBookingRequestsPageDataDocument,
-    'query GetAdministrationSupportRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  supportRequests {\n    findMany {\n      supportRequestId\n      userId\n      bookingRequestId\n      subject\n      message\n      createdAt\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n    }\n  }\n}':
-        types.GetAdministrationSupportRequestsPageDataDocument,
     'query GetAdministrationUsersPageData($request: FindManyRequest!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  users {\n    findMany(request: $request) {\n      userId\n      isLocked\n      firstName\n      lastName\n      profilePictureUrl\n      isAdmin\n      isCook\n      createdAt\n    }\n  }\n}':
         types.GetAdministrationUsersPageDataDocument,
-    'query CookGetStripeDashboardUrl($cookId: String!) {\n  cooks {\n    getStripeDashboardUrl(cookId: $cookId)\n  }\n}':
-        types.CookGetStripeDashboardUrlDocument,
-    'query CookGetStripeOnboardingUrl($cookId: String!) {\n  cooks {\n    getStripeOnboardingUrl(cookId: $cookId)\n  }\n}':
-        types.CookGetStripeOnboardingUrlDocument,
-    'query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}':
+    'query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n    }\n  }\n}':
         types.GetCookProfileQueryDocument,
     'mutation CookBookingRequestAccept($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      success: accept(bookingRequestId: $bookingRequestId)\n    }\n  }\n}':
         types.CookBookingRequestAcceptDocument,
@@ -84,15 +69,15 @@ const documents = {
         types.CookBookingRequestUpdatePriceDocument,
     'mutation CreateOneCookBookingRequest($cookId: String!, $globalBookingRequestId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      success: createOne(globalBookingRequestId: $globalBookingRequestId)\n    }\n  }\n}':
         types.CreateOneCookBookingRequestDocument,
-    'query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}':
+    'query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}':
         types.FindCookProfileGlobalBookingRequestsDocument,
     'query FindManyCookBookingRequests($cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        configuredMenu {\n          title\n        }\n      }\n    }\n  }\n}':
         types.FindManyCookBookingRequestsDocument,
-    'query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}':
+    'query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}':
         types.FindOneCookBookingRequestDocument,
     'mutation CreateOneCookBookingRequestChatMessage($request: CreateChatMessageRequest!, $bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        success: createOne(request: $request)\n      }\n    }\n  }\n}':
         types.CreateOneCookBookingRequestChatMessageDocument,
-    'query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}':
+    'query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}':
         types.FindManyCookBookingRequestChatMessagesDocument,
     'mutation AddOneCookLanguage($cookId: String!, $languageId: String!) {\n  cooks {\n    success: addOneLanguage(cookId: $cookId, languageId: $languageId)\n  }\n}':
         types.AddOneCookLanguageDocument,
@@ -152,18 +137,8 @@ const documents = {
         types.UpdateCookMenuPricePerChildDocument,
     'mutation UpdateCookMenuTitle($menuId: String!, $title: String!, $cookId: String!) {\n  cooks {\n    menus(cookId: $cookId) {\n      success: updateTitle(menuId: $menuId, title: $title)\n    }\n  }\n}':
         types.UpdateCookMenuTitleDocument,
-    'query GetCookProfileBookingsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n  }\n}':
-        types.GetCookProfileBookingsPageDataDocument,
-    'query GetCookProfileMealsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    meals(cookId: $cookId) {\n      findMany {\n        mealId\n        cookId\n        title\n        type\n        description\n        imageUrl\n        createdAt\n      }\n    }\n  }\n}':
-        types.GetCookProfileMealsPageDataDocument,
-    'query GetCookProfileMenusPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    menus(cookId: $cookId) {\n      findMany {\n        menuId\n        title\n        description\n        basePrice\n        basePriceCustomers\n        createdAt\n        currencyCode\n        preparationTime\n        pricePerAdult\n        pricePerChild\n        isVisible\n        categories {\n          categoryId\n          title\n        }\n        kitchen {\n          kitchenId\n          title\n        }\n        imageUrls\n      }\n    }\n  }\n}':
-        types.GetCookProfileMenusPageDataDocument,
-    'query GetCookProfilePersonalInformationPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}':
-        types.GetCookProfilePersonalInformationPageDataDocument,
     'mutation UpdateCookBiography($cookId: String!, $biography: String!) {\n  cooks {\n    success: updateBiography(cookId: $cookId, biography: $biography)\n  }\n}':
         types.UpdateCookBiographyDocument,
-    'mutation UpdateCookHasStripePayoutMethodActivated($cookId: String!) {\n  cooks {\n    success: updateHasStripePayoutMethodActivated(cookId: $cookId)\n  }\n}':
-        types.UpdateCookHasStripePayoutMethodActivatedDocument,
     'mutation UpdateCookIsLocked($cookId: String!, $isLocked: Boolean!) {\n  cooks {\n    success: updateIsLocked(cookId: $cookId, isLocked: $isLocked)\n  }\n}':
         types.UpdateCookIsLockedDocument,
     'mutation UpdateCookIsVisible($cookId: String!, $isVisible: Boolean!) {\n  cooks {\n    success: updateIsVisible(cookId: $cookId, isVisible: $isVisible)\n  }\n}':
@@ -184,31 +159,19 @@ const documents = {
         types.UpdateCookRankDocument,
     'mutation UpdateCookTravelExpenses($cookId: String!, $travelExpenses: UnsignedInt!) {\n  cooks {\n    success: updateTravelExpenses(cookId: $cookId, travelExpenses: $travelExpenses)\n  }\n}':
         types.UpdateCookTravelExpensesDocument,
-    'mutation ConfirmOneEmailAddressUpdate($secret: String!) {\n  users {\n    emailAddressUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}':
+    'mutation ConfirmOneEmailAddressUpdate($userId: String!, $secret: String!) {\n  users {\n    emailAddressUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}':
         types.ConfirmOneEmailAddressUpdateDocument,
     'mutation CreateOneEmailAddressUpdate($emailAddress: EmailAddress!, $userId: String!) {\n  users {\n    emailAddressUpdate(userId: $userId) {\n      success: createOne(emailAddress: $emailAddress)\n    }\n  }\n}':
         types.CreateOneEmailAddressUpdateDocument,
-    'fragment ChatMessage on ChatMessage {\n  chatMessageId\n  bookingRequestId\n  message\n  createdBy\n  createdAt\n}':
-        types.ChatMessageFragmentDoc,
-    'fragment ConfiguredMenu on ConfiguredMenu {\n  menuId\n  title\n  description\n  greetingFromKitchen\n  kitchenId\n  courses {\n    index\n    title\n    mealTitle\n    mealDescription\n    mealImageUrl\n    mealType\n  }\n}':
-        types.ConfiguredMenuFragmentDoc,
     'fragment SignedInUser on User {\n  userId\n  firstName\n  profilePictureUrl\n  isCook\n  isAdmin\n}': types.SignedInUserFragmentDoc,
-    'mutation ConfirmOneOneTimeAccessToken($secret: String!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}':
-        types.ConfirmOneOneTimeAccessTokenDocument,
-    'mutation CreateOneOneTimeAccessTokenByEmailAddress($emailAddress: EmailAddress!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: createOneForEmailAddress(emailAddress: $emailAddress)\n    }\n  }\n}':
-        types.CreateOneOneTimeAccessTokenByEmailAddressDocument,
-    'mutation ConfirmOnePhoneNumberUpdate($secret: String!) {\n  users {\n    phoneNumberUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}':
+    'mutation ConfirmOnePhoneNumberUpdate($userId: String!, $secret: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}':
         types.ConfirmOnePhoneNumberUpdateDocument,
     'mutation CreateOnePhoneNumberUpdate($phoneNumber: PhoneNumber!, $userId: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: createOne(phoneNumber: $phoneNumber)\n    }\n  }\n}':
         types.CreateOnePhoneNumberUpdateDocument,
-    'mutation CreateOneSearchRequest($request: CreateOneSearchRequestRequest!) {\n  searchRequests {\n    success: createOne(request: $request)\n  }\n}':
-        types.CreateOneSearchRequestDocument,
     'mutation CreateOneCook($cookId: String!, $request: CreateOneCookRequest!) {\n  cooks {\n    success: createOne(cookId: $cookId, request: $request)\n  }\n}':
         types.CreateOneCookDocument,
     'mutation CreateOneUserAddress($address: CreateOneAddressRequest!, $userId: String!) {\n  users {\n    addresses(userId: $userId) {\n      success: createOne(address: $address)\n    }\n  }\n}':
         types.CreateOneUserAddressDocument,
-    'mutation CreateOneUserSupportRequest($request: CreateOneSupportRequest!, $userId: String!) {\n  users {\n    supportRequests(userId: $userId) {\n      createOne(request: $request)\n    }\n  }\n}':
-        types.CreateOneUserSupportRequestDocument,
     'mutation DeleteOneUserAddress($addressId: String!, $userId: String!) {\n  users {\n    addresses(userId: $userId) {\n      success: deleteOne(addressId: $addressId)\n    }\n  }\n}':
         types.DeleteOneUserAddressDocument,
     'query GetProfileQuery {\n  users {\n    me {\n      userId\n      firstName\n      lastName\n      profilePictureUrl\n      birthDate\n      gender\n      acceptedTerms\n      acceptedPrivacyPolicy\n      emailAddress\n      phoneNumber\n      createdAt\n      isCook\n      isAdmin\n      addresses {\n        addressId\n        title\n        country\n        city\n        postCode\n        street\n        houseNumber\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n      emailAddressUpdate {\n        emailAddress\n        createdAt\n      }\n      phoneNumberUpdate {\n        phoneNumber\n        createdAt\n      }\n    }\n  }\n}':
@@ -221,38 +184,30 @@ const documents = {
         types.UpdateUserPasswordDocument,
     'mutation UpdateUserProfilePicture($userId: String!, $profilePicture: Upload) {\n  users {\n    success: updateProfilePicture(userId: $userId, profilePicture: $profilePicture)\n  }\n}':
         types.UpdateUserProfilePictureDocument,
-    'mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n        bookingRequestId\n      }\n    }\n  }\n}':
+    'mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n      }\n    }\n  }\n}':
         types.CreateOneUserBookingRequestDocument,
     'query FindManyUserBookingRequests($userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n  }\n}':
         types.FindManyUserBookingRequestsDocument,
-    'query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}':
+    'query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}':
         types.FindOneUserBookingRequestDocument,
-    'query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}':
+    'query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}':
         types.FindUserProfileGlobalBookingRequestsDocument,
     'mutation UserBookingRequestAccept($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: accept(bookingRequestId: $bookingRequestId)\n    }\n  }\n}':
         types.UserBookingRequestAcceptDocument,
-    'mutation UserBookingRequestConfirmPaymentSetup($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: confirmPaymentSetup(bookingRequestId: $bookingRequestId)\n    }\n  }\n}':
-        types.UserBookingRequestConfirmPaymentSetupDocument,
     'mutation UserBookingRequestDecline($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: decline(bookingRequestId: $bookingRequestId)\n    }\n  }\n}':
         types.UserBookingRequestDeclineDocument,
     'mutation UserBookingRequestUpdatePrice($userId: String!, $bookingRequestId: String!, $price: PriceInput!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: updatePrice(bookingRequestId: $bookingRequestId, price: $price)\n    }\n  }\n}':
         types.UserBookingRequestUpdatePriceDocument,
     'mutation CreateOneUserBookingRequestChatMessage($request: CreateChatMessageRequest!, $bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        success: createOne(request: $request)\n      }\n    }\n  }\n}':
         types.CreateOneUserBookingRequestChatMessageDocument,
-    'query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}':
+    'query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}':
         types.FindManyUserBookingRequestChatMessagesDocument,
     'mutation CreateOneFollowing($cookId: String!, $userId: String!) {\n  users {\n    followings(userId: $userId) {\n      success: createOne(cookId: $cookId)\n    }\n  }\n}':
         types.CreateOneFollowingDocument,
     'mutation DeleteOneFollowing($userId: String!, $cookId: String!) {\n  users {\n    followings(userId: $userId) {\n      success: deleteOne(cookId: $cookId)\n    }\n  }\n}':
         types.DeleteOneFollowingDocument,
-    'query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n          city\n        }\n      }\n    }\n  }\n}':
+    'query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n      }\n    }\n  }\n}':
         types.FindManyFollowingsDocument,
-    'query GetUserProfileBookingsPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    bookingRequests(userId: $userId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}':
-        types.GetUserProfileBookingsPageDataDocument,
-    'query GetUserProfileFavoriteCooksPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    followings(userId: $userId) {\n      findAll {\n        cookId\n        cook {\n          user {\n            firstName\n            profilePictureUrl\n          }\n          rank\n          city\n          location {\n            text\n            longitude\n            latitude\n          }\n        }\n      }\n    }\n  }\n}':
-        types.GetUserProfileFavoriteCooksPageDataDocument,
-    'query GetUserProfilePersonalInformationPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    me {\n      userId\n      firstName\n      lastName\n      profilePictureUrl\n      birthDate\n      gender\n      acceptedTerms\n      acceptedPrivacyPolicy\n      emailAddress\n      phoneNumber\n      createdAt\n      isCook\n      isAdmin\n      addresses {\n        addressId\n        title\n        country\n        city\n        postCode\n        street\n        houseNumber\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n      emailAddressUpdate {\n        emailAddress\n        createdAt\n      }\n      phoneNumberUpdate {\n        phoneNumber\n        createdAt\n      }\n    }\n  }\n}':
-        types.GetUserProfilePersonalInformationPageDataDocument,
 };
 
 /**
@@ -275,12 +230,6 @@ export function gql(source: string): unknown;
 export function gql(
     source: 'mutation AssignOneSessionByEmailAddress($request: CreateOneSessionByEmailAddressRequest!) {\n  sessions {\n    success: assignOneByEmailAddress(request: $request)\n  }\n}',
 ): (typeof documents)['mutation AssignOneSessionByEmailAddress($request: CreateOneSessionByEmailAddressRequest!) {\n  sessions {\n    success: assignOneByEmailAddress(request: $request)\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'subscription BookingRequestChatMessageCreations($bookingRequestId: String!) {\n  bookingRequestChatMessageCreations(bookingRequestId: $bookingRequestId) {\n    ...ChatMessage\n  }\n}',
-): (typeof documents)['subscription BookingRequestChatMessageCreations($bookingRequestId: String!) {\n  bookingRequestChatMessageCreations(bookingRequestId: $bookingRequestId) {\n    ...ChatMessage\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -345,6 +294,24 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
+    source: 'query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n        createdAt\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n        createdAt\n      }\n    }\n  }\n}'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+    source: 'query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}',
+): (typeof documents)['query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+    source: 'query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}',
+): (typeof documents)['query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
     source: 'query GetCookBookingRequestPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findOne(cookId: $cookId) {\n      cookId\n      languages {\n        languageId\n        title\n      }\n      location {\n        latitude\n        longitude\n      }\n      maximumTravelDistance\n      maximumPrice\n      minimumPrice\n      travelExpenses\n      rank\n      user {\n        firstName\n        profilePictureUrl\n      }\n      maximumParticipants\n      minimumParticipants\n      createdAt\n    }\n  }\n  categories {\n    findAll {\n      categoryId\n      title\n    }\n  }\n  kitchens {\n    findAll {\n      kitchenId\n      title\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n}',
 ): (typeof documents)['query GetCookBookingRequestPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findOne(cookId: $cookId) {\n      cookId\n      languages {\n        languageId\n        title\n      }\n      location {\n        latitude\n        longitude\n      }\n      maximumTravelDistance\n      maximumPrice\n      minimumPrice\n      travelExpenses\n      rank\n      user {\n        firstName\n        profilePictureUrl\n      }\n      maximumParticipants\n      minimumParticipants\n      createdAt\n    }\n  }\n  categories {\n    findAll {\n      categoryId\n      title\n    }\n  }\n  kitchens {\n    findAll {\n      kitchenId\n      title\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n}'];
 /**
@@ -369,12 +336,6 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query GetHomePageDataDocument {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findHeroes {\n      cookId\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      rank\n      biography\n      location {\n        latitude\n        longitude\n      }\n      city\n      travelExpenses\n      createdAt\n    }\n  }\n  publicMenus {\n    findHeroes {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n}',
-): (typeof documents)['query GetHomePageDataDocument {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicCooks {\n    findHeroes {\n      cookId\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      rank\n      biography\n      location {\n        latitude\n        longitude\n      }\n      city\n      travelExpenses\n      createdAt\n    }\n  }\n  publicMenus {\n    findHeroes {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
     source: 'query GetMenuBookingRequestPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n        city\n        travelExpenses\n        maximumTravelDistance\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}',
 ): (typeof documents)['query GetMenuBookingRequestPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n        city\n        travelExpenses\n        maximumTravelDistance\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}'];
 /**
@@ -393,8 +354,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      greetingFromKitchen\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        maximumTravelDistance\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}',
-): (typeof documents)['query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      greetingFromKitchen\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        maximumTravelDistance\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}'];
+    source: 'query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}',
+): (typeof documents)['query GetPublicMenuPageData($menuId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  publicMenus {\n    findOne(menuId: $menuId) {\n      menuId\n      title\n      description\n      kitchen {\n        kitchenId\n        title\n      }\n      cook {\n        cookId\n        rank\n        city\n        travelExpenses\n        user {\n          firstName\n          profilePictureUrl\n        }\n        location {\n          latitude\n          longitude\n        }\n      }\n      categories {\n        categoryId\n        title\n      }\n      courses {\n        index\n        courseId\n        title\n        mealOptions {\n          index\n          meal {\n            mealId\n            title\n            description\n            type\n            imageUrl\n          }\n        }\n      }\n      imageUrls\n      basePrice\n      basePriceCustomers\n      pricePerAdult\n      pricePerChild\n      currencyCode\n    }\n  }\n  allergies {\n    findAll {\n      allergyId\n      title\n    }\n  }\n  stripePublishableKey\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -405,50 +366,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query GetSignedInUser {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n}',
-): (typeof documents)['query GetSignedInUser {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
     source: 'mutation UpdateSessionCookieSettings($request: SessionCookieSettingsInput!) {\n  sessions {\n    success: updateCookieSettings(request: $request)\n  }\n}',
 ): (typeof documents)['mutation UpdateSessionCookieSettings($request: SessionCookieSettingsInput!) {\n  sessions {\n    success: updateCookieSettings(request: $request)\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindManyAdmins {\n  admins {\n    findMany {\n      adminId\n      user {\n        firstName\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}',
-): (typeof documents)['query FindManyCooks($request: FindManyRequest!) {\n  cooks {\n    findMany(request: $request) {\n      cookId\n      user {\n        firstName\n        lastName\n      }\n      rank\n      isLocked\n      biography\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}',
-): (typeof documents)['query FindManyUsers($request: FindManyRequest!) {\n  users {\n    findMany(request: $request) {\n      userId\n      firstName\n      lastName\n      language\n      isCook\n      isAdmin\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetAdministrationBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  bookingRequests {\n    findMany {\n      bookingRequestId\n      globalBookingRequestId\n      adultParticipants\n      children\n      cookAccepted\n      userAccepted\n      occasion\n      dateTime\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      cook {\n        cookId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        rank\n        city\n      }\n      price {\n        amount\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetAdministrationBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  bookingRequests {\n    findMany {\n      bookingRequestId\n      globalBookingRequestId\n      adultParticipants\n      children\n      cookAccepted\n      userAccepted\n      occasion\n      dateTime\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      cook {\n        cookId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        rank\n        city\n      }\n      price {\n        amount\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetAdministrationGlobalBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  globalBookingRequests {\n    findMany {\n      globalBookingRequestId\n      occasion\n      dateTime\n      adultParticipants\n      children\n      priceClass {\n        type\n        min\n        max\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      createdAt\n    }\n  }\n}',
-): (typeof documents)['query GetAdministrationGlobalBookingRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  globalBookingRequests {\n    findMany {\n      globalBookingRequestId\n      occasion\n      dateTime\n      adultParticipants\n      children\n      priceClass {\n        type\n        min\n        max\n        currencyCode\n      }\n      location {\n        latitude\n        longitude\n        text\n      }\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n      createdAt\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetAdministrationSupportRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  supportRequests {\n    findMany {\n      supportRequestId\n      userId\n      bookingRequestId\n      subject\n      message\n      createdAt\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetAdministrationSupportRequestsPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  supportRequests {\n    findMany {\n      supportRequestId\n      userId\n      bookingRequestId\n      subject\n      message\n      createdAt\n      user {\n        userId\n        firstName\n        profilePictureUrl\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -459,20 +378,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query CookGetStripeDashboardUrl($cookId: String!) {\n  cooks {\n    getStripeDashboardUrl(cookId: $cookId)\n  }\n}',
-): (typeof documents)['query CookGetStripeDashboardUrl($cookId: String!) {\n  cooks {\n    getStripeDashboardUrl(cookId: $cookId)\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query CookGetStripeOnboardingUrl($cookId: String!) {\n  cooks {\n    getStripeOnboardingUrl(cookId: $cookId)\n  }\n}',
-): (typeof documents)['query CookGetStripeOnboardingUrl($cookId: String!) {\n  cooks {\n    getStripeOnboardingUrl(cookId: $cookId)\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}',
-): (typeof documents)['query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}'];
+    source: 'query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n    }\n  }\n}',
+): (typeof documents)['query GetCookProfileQuery($cookId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -501,8 +408,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}'];
+    source: 'query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindCookProfileGlobalBookingRequests($cookId: String!) {\n  cooks {\n    globalBookingRequests(cookId: $cookId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -513,8 +420,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}'];
+    source: 'query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindOneCookBookingRequest($cookId: String!, $bookingRequestId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        user {\n          firstName\n          profilePictureUrl\n        }\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -525,8 +432,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}'];
+    source: 'query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindManyCookBookingRequestChatMessages($bookingRequestId: String!, $cookId: String!) {\n  cooks {\n    bookingRequests(cookId: $cookId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -705,38 +612,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query GetCookProfileBookingsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetCookProfileBookingsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      hasStripePayoutMethodActivated\n    }\n    bookingRequests(cookId: $cookId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetCookProfileMealsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    meals(cookId: $cookId) {\n      findMany {\n        mealId\n        cookId\n        title\n        type\n        description\n        imageUrl\n        createdAt\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetCookProfileMealsPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    meals(cookId: $cookId) {\n      findMany {\n        mealId\n        cookId\n        title\n        type\n        description\n        imageUrl\n        createdAt\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetCookProfileMenusPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    menus(cookId: $cookId) {\n      findMany {\n        menuId\n        title\n        description\n        basePrice\n        basePriceCustomers\n        createdAt\n        currencyCode\n        preparationTime\n        pricePerAdult\n        pricePerChild\n        isVisible\n        categories {\n          categoryId\n          title\n        }\n        kitchen {\n          kitchenId\n          title\n        }\n        imageUrls\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetCookProfileMenusPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    menus(cookId: $cookId) {\n      findMany {\n        menuId\n        title\n        description\n        basePrice\n        basePriceCustomers\n        createdAt\n        currencyCode\n        preparationTime\n        pricePerAdult\n        pricePerChild\n        isVisible\n        categories {\n          categoryId\n          title\n        }\n        kitchen {\n          kitchenId\n          title\n        }\n        imageUrls\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetCookProfilePersonalInformationPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}',
-): (typeof documents)['query GetCookProfilePersonalInformationPageData($cookId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n  }\n  cooks {\n    findOne(cookId: $cookId) {\n      cookId\n      user {\n        firstName\n        lastName\n        profilePictureUrl\n        addresses {\n          addressId\n          title\n          country\n          city\n          postCode\n          street\n          houseNumber\n          location {\n            latitude\n            longitude\n          }\n          createdAt\n        }\n      }\n      languages {\n        languageId\n        title\n      }\n      isLocked\n      isVisible\n      biography\n      location {\n        latitude\n        longitude\n      }\n      maximumParticipants\n      maximumPrice\n      maximumTravelDistance\n      minimumParticipants\n      minimumPrice\n      rank\n      travelExpenses\n      ratingAverage\n      ratingCount\n      hasStripePayoutMethodActivated\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
     source: 'mutation UpdateCookBiography($cookId: String!, $biography: String!) {\n  cooks {\n    success: updateBiography(cookId: $cookId, biography: $biography)\n  }\n}',
 ): (typeof documents)['mutation UpdateCookBiography($cookId: String!, $biography: String!) {\n  cooks {\n    success: updateBiography(cookId: $cookId, biography: $biography)\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation UpdateCookHasStripePayoutMethodActivated($cookId: String!) {\n  cooks {\n    success: updateHasStripePayoutMethodActivated(cookId: $cookId)\n  }\n}',
-): (typeof documents)['mutation UpdateCookHasStripePayoutMethodActivated($cookId: String!) {\n  cooks {\n    success: updateHasStripePayoutMethodActivated(cookId: $cookId)\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -801,8 +678,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'mutation ConfirmOneEmailAddressUpdate($secret: String!) {\n  users {\n    emailAddressUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}',
-): (typeof documents)['mutation ConfirmOneEmailAddressUpdate($secret: String!) {\n  users {\n    emailAddressUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}'];
+    source: 'mutation ConfirmOneEmailAddressUpdate($userId: String!, $secret: String!) {\n  users {\n    emailAddressUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}',
+): (typeof documents)['mutation ConfirmOneEmailAddressUpdate($userId: String!, $secret: String!) {\n  users {\n    emailAddressUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -813,50 +690,20 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'fragment ChatMessage on ChatMessage {\n  chatMessageId\n  bookingRequestId\n  message\n  createdBy\n  createdAt\n}',
-): (typeof documents)['fragment ChatMessage on ChatMessage {\n  chatMessageId\n  bookingRequestId\n  message\n  createdBy\n  createdAt\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'fragment ConfiguredMenu on ConfiguredMenu {\n  menuId\n  title\n  description\n  greetingFromKitchen\n  kitchenId\n  courses {\n    index\n    title\n    mealTitle\n    mealDescription\n    mealImageUrl\n    mealType\n  }\n}',
-): (typeof documents)['fragment ConfiguredMenu on ConfiguredMenu {\n  menuId\n  title\n  description\n  greetingFromKitchen\n  kitchenId\n  courses {\n    index\n    title\n    mealTitle\n    mealDescription\n    mealImageUrl\n    mealType\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
     source: 'fragment SignedInUser on User {\n  userId\n  firstName\n  profilePictureUrl\n  isCook\n  isAdmin\n}',
 ): (typeof documents)['fragment SignedInUser on User {\n  userId\n  firstName\n  profilePictureUrl\n  isCook\n  isAdmin\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'mutation ConfirmOneOneTimeAccessToken($secret: String!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}',
-): (typeof documents)['mutation ConfirmOneOneTimeAccessToken($secret: String!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation CreateOneOneTimeAccessTokenByEmailAddress($emailAddress: EmailAddress!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: createOneForEmailAddress(emailAddress: $emailAddress)\n    }\n  }\n}',
-): (typeof documents)['mutation CreateOneOneTimeAccessTokenByEmailAddress($emailAddress: EmailAddress!) {\n  users {\n    oneTimeAccessToken(userId: "") {\n      success: createOneForEmailAddress(emailAddress: $emailAddress)\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation ConfirmOnePhoneNumberUpdate($secret: String!) {\n  users {\n    phoneNumberUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}',
-): (typeof documents)['mutation ConfirmOnePhoneNumberUpdate($secret: String!) {\n  users {\n    phoneNumberUpdate(userId: "") {\n      success: confirm(secret: $secret)\n    }\n  }\n}'];
+    source: 'mutation ConfirmOnePhoneNumberUpdate($userId: String!, $secret: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}',
+): (typeof documents)['mutation ConfirmOnePhoneNumberUpdate($userId: String!, $secret: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: confirm(secret: $secret)\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
     source: 'mutation CreateOnePhoneNumberUpdate($phoneNumber: PhoneNumber!, $userId: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: createOne(phoneNumber: $phoneNumber)\n    }\n  }\n}',
 ): (typeof documents)['mutation CreateOnePhoneNumberUpdate($phoneNumber: PhoneNumber!, $userId: String!) {\n  users {\n    phoneNumberUpdate(userId: $userId) {\n      success: createOne(phoneNumber: $phoneNumber)\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation CreateOneSearchRequest($request: CreateOneSearchRequestRequest!) {\n  searchRequests {\n    success: createOne(request: $request)\n  }\n}',
-): (typeof documents)['mutation CreateOneSearchRequest($request: CreateOneSearchRequestRequest!) {\n  searchRequests {\n    success: createOne(request: $request)\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -869,12 +716,6 @@ export function gql(
 export function gql(
     source: 'mutation CreateOneUserAddress($address: CreateOneAddressRequest!, $userId: String!) {\n  users {\n    addresses(userId: $userId) {\n      success: createOne(address: $address)\n    }\n  }\n}',
 ): (typeof documents)['mutation CreateOneUserAddress($address: CreateOneAddressRequest!, $userId: String!) {\n  users {\n    addresses(userId: $userId) {\n      success: createOne(address: $address)\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation CreateOneUserSupportRequest($request: CreateOneSupportRequest!, $userId: String!) {\n  users {\n    supportRequests(userId: $userId) {\n      createOne(request: $request)\n    }\n  }\n}',
-): (typeof documents)['mutation CreateOneUserSupportRequest($request: CreateOneSupportRequest!, $userId: String!) {\n  users {\n    supportRequests(userId: $userId) {\n      createOne(request: $request)\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -915,8 +756,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n        bookingRequestId\n      }\n    }\n  }\n}',
-): (typeof documents)['mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n        bookingRequestId\n      }\n    }\n  }\n}'];
+    source: 'mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n      }\n    }\n  }\n}',
+): (typeof documents)['mutation CreateOneUserBookingRequest($request: CreateBookingRequestRequest!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      createOne(request: $request) {\n        success\n        clientSecret\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -927,26 +768,20 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          ...ConfiguredMenu\n        }\n      }\n    }\n  }\n}'];
+    source: 'query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindOneUserBookingRequest($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      findOne(bookingRequestId: $bookingRequestId) {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          menuId\n          title\n          description\n          greetingFromKitchen\n          kitchenId\n          courses {\n            index\n            title\n            mealTitle\n            mealDescription\n            mealImageUrl\n            mealType\n          }\n        }\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}'];
+    source: 'query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindUserProfileGlobalBookingRequests($userId: String!) {\n  users {\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
     source: 'mutation UserBookingRequestAccept($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: accept(bookingRequestId: $bookingRequestId)\n    }\n  }\n}',
 ): (typeof documents)['mutation UserBookingRequestAccept($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: accept(bookingRequestId: $bookingRequestId)\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'mutation UserBookingRequestConfirmPaymentSetup($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: confirmPaymentSetup(bookingRequestId: $bookingRequestId)\n    }\n  }\n}',
-): (typeof documents)['mutation UserBookingRequestConfirmPaymentSetup($userId: String!, $bookingRequestId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      success: confirmPaymentSetup(bookingRequestId: $bookingRequestId)\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -969,8 +804,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          ...ChatMessage\n        }\n      }\n    }\n  }\n}'];
+    source: 'query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindManyUserBookingRequestChatMessages($bookingRequestId: String!, $userId: String!) {\n  users {\n    bookingRequests(userId: $userId) {\n      chatMessages(bookingRequestId: $bookingRequestId) {\n        findMany {\n          chatMessageId\n          message\n          createdBy\n          createdAt\n        }\n      }\n    }\n  }\n}'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -987,26 +822,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-    source: 'query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n          city\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n          city\n        }\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetUserProfileBookingsPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    bookingRequests(userId: $userId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetUserProfileBookingsPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    bookingRequests(userId: $userId) {\n      findMany {\n        bookingRequestId\n        globalBookingRequestId\n        adultParticipants\n        children\n        dateTime\n        status\n        userAccepted\n        cookAccepted\n        kitchenId\n        occasion\n        preparationTime\n        price {\n          amount\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        duration\n        createdAt\n        cook {\n          cookId\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n        configuredMenu {\n          title\n        }\n      }\n    }\n    globalBookingRequests(userId: $userId) {\n      findMany {\n        globalBookingRequestId\n        children\n        adultParticipants\n        occasion\n        message\n        dateTime\n        duration\n        priceClass {\n          type\n          min\n          max\n          currencyCode\n        }\n        location {\n          latitude\n          longitude\n          text\n        }\n        createdAt\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetUserProfileFavoriteCooksPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    followings(userId: $userId) {\n      findAll {\n        cookId\n        cook {\n          user {\n            firstName\n            profilePictureUrl\n          }\n          rank\n          city\n          location {\n            text\n            longitude\n            latitude\n          }\n        }\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetUserProfileFavoriteCooksPageData($userId: String!) {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    followings(userId: $userId) {\n      findAll {\n        cookId\n        cook {\n          user {\n            firstName\n            profilePictureUrl\n          }\n          rank\n          city\n          location {\n            text\n            longitude\n            latitude\n          }\n        }\n      }\n    }\n  }\n}'];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(
-    source: 'query GetUserProfilePersonalInformationPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    me {\n      userId\n      firstName\n      lastName\n      profilePictureUrl\n      birthDate\n      gender\n      acceptedTerms\n      acceptedPrivacyPolicy\n      emailAddress\n      phoneNumber\n      createdAt\n      isCook\n      isAdmin\n      addresses {\n        addressId\n        title\n        country\n        city\n        postCode\n        street\n        houseNumber\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n      emailAddressUpdate {\n        emailAddress\n        createdAt\n      }\n      phoneNumberUpdate {\n        phoneNumber\n        createdAt\n      }\n    }\n  }\n}',
-): (typeof documents)['query GetUserProfilePersonalInformationPageData {\n  users {\n    signedInUser: me {\n      ...SignedInUser\n    }\n    me {\n      userId\n      firstName\n      lastName\n      profilePictureUrl\n      birthDate\n      gender\n      acceptedTerms\n      acceptedPrivacyPolicy\n      emailAddress\n      phoneNumber\n      createdAt\n      isCook\n      isAdmin\n      addresses {\n        addressId\n        title\n        country\n        city\n        postCode\n        street\n        houseNumber\n        location {\n          latitude\n          longitude\n        }\n        createdAt\n      }\n      emailAddressUpdate {\n        emailAddress\n        createdAt\n      }\n      phoneNumberUpdate {\n        phoneNumber\n        createdAt\n      }\n    }\n  }\n}'];
+    source: 'query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n      }\n    }\n  }\n}',
+): (typeof documents)['query FindManyFollowings {\n  users {\n    me {\n      followings {\n        cook {\n          rank\n          user {\n            firstName\n            profilePictureUrl\n          }\n        }\n      }\n    }\n  }\n}'];
 
 export function gql(source: string) {
     return (documents as any)[source] ?? {};

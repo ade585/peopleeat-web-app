@@ -1,95 +1,73 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { ApolloClient, InMemoryCache, useMutation, useQuery } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import moment from 'moment';
 import { type GetServerSideProps, type NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import Script from 'next/script';
 import { createContext, useEffect, useState, type Context } from 'react';
-import { HomePage } from '../components/pages/home/HomePage';
+import HomePage, { type HomePageProps } from '../components/pages/home';
 import PECheckbox from '../components/standard/checkbox/PECheckbox';
 import HStack from '../components/utility/hStack/HStack';
 import Spacer from '../components/utility/spacer/Spacer';
-import { createApolloClient } from '../data-source/createApolloClient';
 import {
     FindCurrentSessionDocument,
-    GetHomePageDataDocumentDocument,
+    GetProfileQueryDocument,
     UpdateSessionCookieSettingsDocument,
-    type GetHomePageDataDocumentQuery,
     type SessionCookieSettingsInput,
 } from '../data-source/generated/graphql';
+import useResponsive from '../hooks/useResponsive';
 import { type SignedInUser } from '../shared-domain/SignedInUser';
 
-interface ServerSideProps {
-    signedInUser: GetHomePageDataDocumentQuery['users']['signedInUser'];
-    heroCooks: NonNullable<GetHomePageDataDocumentQuery['publicCooks']['findHeroes']>;
-    heroMenus: NonNullable<GetHomePageDataDocumentQuery['publicMenus']['findHeroes']>;
-    searchParameters: {
-        location: {
-            address: string;
-            latitude: number;
-            longitude: number;
-        };
-        adults: number;
-        children: number;
-        date: string;
-    };
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const { data } = await new ApolloClient({
+        uri: process.env.NEXT_PUBLIC_SERVER_URL,
+        credentials: 'include',
+        headers: { cookie: context.req.headers.cookie as string },
+        cache: new InMemoryCache(),
+        ssrMode: true,
+    }).query({ query: GetProfileQueryDocument });
 
-export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({ req }) => {
-    const apolloClient = createApolloClient(req.headers.cookie);
-    console.log('sqdjkjdsqhkjdsqhjhdsqjkhdsqkjhdkjdsqhkjdsqhkjdskdsqhdsqkjhdsqk');
-
-    try {
-        const { data } = await apolloClient.query({ query: GetHomePageDataDocumentDocument });
-
-        return {
-            props: {
-                signedInUser: data.users.signedInUser,
-                heroCooks: data.publicCooks.findHeroes,
-                heroMenus: data.publicMenus.findHeroes,
-                searchParameters: {
-                    location: {
-                        address: '',
-                        latitude: 49,
-                        longitude: 8,
-                    },
-                    adults: 4,
-                    children: 0,
-                    date: moment().add(14, 'days').format(moment.HTML5_FMT.DATE),
+    return {
+        props: {
+            signedInUser: data.users.me,
+            searchParameters: {
+                location: {
+                    address: '',
+                    latitude: 49,
+                    longitude: 8,
                 },
+                adults: 4,
+                children: 0,
+                date: moment().add(14, 'days').format(moment.HTML5_FMT.DATE),
             },
-        };
-    } catch (error) {
-        // @todo: handle properly
-        throw error;
-    }
+        },
+    };
 };
 
 export const HomePageContext: Context<{ signedInUser?: SignedInUser }> = createContext({});
 
-const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, heroCooks, heroMenus }) => {
-    console.log('ndex: NextPage<ServerSideProps>');
+const Index: NextPage<HomePageProps> = ({ signedInUser, searchParameters }: HomePageProps) => {
     const [showCookieBanner, setShowCookieBanner] = useState(false);
     const [cookieSettings, setCookieSettings] = useState<SessionCookieSettingsInput>({
         sessionCookie: false,
         googleAnalytics: false,
     });
 
-    const { data, loading, refetch } = useQuery(FindCurrentSessionDocument);
-    const [updateCookieSettings] = useMutation(UpdateSessionCookieSettingsDocument);
+    const { data, loading } = useQuery(FindCurrentSessionDocument);
+    const { isMobile } = useResponsive();
 
     useEffect(() => {
         if (!data?.sessions.current?.cookieSettings && !loading) setShowCookieBanner(true);
 
         if (data?.sessions.current?.cookieSettings) {
-            setShowCookieBanner(false);
             setCookieSettings({
                 sessionCookie: data.sessions.current.cookieSettings.sessionCookie,
                 googleAnalytics: data.sessions.current.cookieSettings.googleAnalytics,
             });
         }
     }, [data, loading]);
+
+    const [updateCookieSettings] = useMutation(UpdateSessionCookieSettingsDocument);
 
     return (
         <>
@@ -109,34 +87,10 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, hero
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <Script id="ga-script" strategy="lazyOnload">
-                {`
-                    (function(w,d,s,l,i) {
-                        w[l] = w[l]||[];
-                        w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
-                        var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-                        j.async=true;
-                        j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-                        f.parentNode.insertBefore(j,f);
-                    })(window,document,'script','dataLayer','GTM-TZHTVCP');
-                `}
-            </Script>
+            <HomePageContext.Provider value={{ signedInUser }}>
+                <HomePage signedInUser={signedInUser} searchParameters={searchParameters} />
+            </HomePageContext.Provider>
 
-            <noscript>
-                <iframe
-                    src="https://www.googletagmanager.com/ns.html?id=GTM-TZHTVCP"
-                    height="0"
-                    width="0"
-                    style={{ display: 'none', visibility: 'hidden' }}
-                ></iframe>
-            </noscript>
-
-            <HomePage
-                signedInUser={signedInUser ?? undefined}
-                heroCooks={heroCooks}
-                heroMenus={heroMenus}
-                searchParameters={searchParameters}
-            />
             <Dialog open={showCookieBanner}>
                 <DialogTitle>Privatsphäre-Einstellungen</DialogTitle>
                 <DialogContent>
@@ -171,7 +125,7 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, hero
                         <Spacer />
                     </HStack>
                 </DialogContent>
-                <DialogActions style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                <DialogActions style={{ padding: isMobile ? '24px' : '10px' }}>
                     <Button
                         onClick={(): void => {
                             void updateCookieSettings({
@@ -181,10 +135,7 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, hero
                                         googleAnalytics: false,
                                     },
                                 },
-                            }).then((result) => {
-                                if (result.data?.sessions.success) setShowCookieBanner(false);
-                                void refetch();
-                            });
+                            }).then((result) => result.data?.sessions.success && setShowCookieBanner(false));
                         }}
                     >
                         Ablehnen
@@ -195,10 +146,7 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, hero
                                 variables: {
                                     request: cookieSettings,
                                 },
-                            }).then((result) => {
-                                if (result.data?.sessions.success) setShowCookieBanner(false);
-                                void refetch();
-                            });
+                            }).then((result) => result.data?.sessions.success && setShowCookieBanner(false));
                         }}
                     >
                         Auswahl akzeptieren
@@ -213,10 +161,7 @@ const Index: NextPage<ServerSideProps> = ({ signedInUser, searchParameters, hero
                                         googleAnalytics: true,
                                     },
                                 },
-                            }).then((result) => {
-                                if (result.data?.sessions.success) setShowCookieBanner(false);
-                                void refetch();
-                            });
+                            }).then((result) => result.data?.sessions.success && setShowCookieBanner(false));
                         }}
                     >
                         Alle akzeptieren

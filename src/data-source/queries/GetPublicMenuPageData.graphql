@@ -9,7 +9,6 @@ query GetPublicMenuPageData($menuId: String!) {
             menuId
             title
             description
-            greetingFromKitchen
             kitchen {
                 kitchenId
                 title
@@ -19,7 +18,6 @@ query GetPublicMenuPageData($menuId: String!) {
                 rank
                 city
                 travelExpenses
-                maximumTravelDistance
                 user {
                     firstName
                     profilePictureUrl

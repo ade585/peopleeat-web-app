@@ -1,10 +1,9 @@
-import { useMutation } from '@apollo/client';
 import moment from 'moment';
 import useTranslation from 'next-translate/useTranslation';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, type ReactElement } from 'react';
-import { CreateOneSearchRequestDocument, type CookRank } from '../../../data-source/generated/graphql';
+import { type CookRank } from '../../../data-source/generated/graphql';
 import searchAddress, { type GoogleMapsPlacesResult } from '../../../data-source/searchAddress';
 import useResponsive from '../../../hooks/useResponsive';
 import { type Location } from '../../../shared-domain/Location';
@@ -52,7 +51,6 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
     const router = useRouter();
     const { t } = useTranslation('search-results');
     const { isMobile } = useResponsive();
-    const [createOneSearchRequest] = useMutation(CreateOneSearchRequestDocument);
 
     const [address, setAddress] = useState(searchParameters.location.address);
     const [addressSearchResults, setAddressSearchResults] = useState<GoogleMapsPlacesResult[]>([]);
@@ -61,25 +59,14 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
     const [adults, setAdults] = useState(searchParameters.adults);
     const [children, setChildren] = useState(searchParameters.children);
     const [date, setDate] = useState(moment(searchParameters.date));
+    const formattedDate: string = date.format(moment.HTML5_FMT.DATE);
 
     function onSearch(): void {
         const { latitude, longitude } = selectedLocation;
 
-        void createOneSearchRequest({
-            variables: {
-                request: {
-                    adults,
-                    children,
-                    date: date.format(moment.HTML5_FMT.DATE),
-                    locationText: address,
-                    origin: 'PUBLIC_COOKS',
-                },
-            },
-        });
-
         void router.push({
             pathname: 'chefs',
-            query: { address, latitude, longitude, adults, children, date: date.format(moment.HTML5_FMT.DATE) },
+            query: { address, latitude, longitude, adults, children, date: formattedDate },
         });
     }
 
@@ -93,7 +80,6 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
                         justifyContent: isMobile ? 'flex-start' : 'space-between',
                         alignItems: isMobile ? 'flex-start' : 'center',
                         flexDirection: isMobile ? 'column-reverse' : 'row',
-                        gap: 16,
                     }}
                     className="w-full gap-8"
                 >
@@ -178,23 +164,13 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
                                     longitude: selectedLocation.longitude,
                                     adults,
                                     children,
-                                    date: date.format(moment.HTML5_FMT.DATE),
+                                    date: formattedDate,
                                 },
                             }}
                             target="_blank"
                             key={index}
                             className="no-underline"
                             style={{ textDecoration: 'none', color: '#000' }}
-                            onClick={(e): void => {
-                                const target = e.target as HTMLElement;
-                                if (target.tagName === 'IMG') {
-                                    const image = target as HTMLImageElement;
-                                    if (image.naturalWidth < 100) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }
-                                }
-                            }}
                         >
                             {isMobile && (
                                 <PEChefCardMobile
@@ -202,11 +178,9 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
                                     profilePictureUrl={publicCook.user.profilePictureUrl}
                                     rank={publicCook.rank}
                                     location={publicCook.city}
-                                    rating={{ average: 5, count: 0 }}
+                                    rating={{ average: 8, count: 12 }}
                                     categories={[]}
                                     kitchens={[]}
-                                    userId={signedInUser?.userId}
-                                    cookId={publicCook.cookId}
                                 />
                             )}
                             {!isMobile && (
@@ -215,11 +189,9 @@ export default function PublicCooksPage({ signedInUser, searchParameters, search
                                     profilePictureUrl={publicCook.user.profilePictureUrl}
                                     rank={publicCook.rank}
                                     location={publicCook.city}
-                                    rating={{ average: 5, count: 0 }}
+                                    rating={{ average: 5, count: 12 }}
                                     categories={[]}
                                     kitchens={[]}
-                                    userId={signedInUser?.userId}
-                                    cookId={publicCook.cookId}
                                 />
                             )}
                         </Link>

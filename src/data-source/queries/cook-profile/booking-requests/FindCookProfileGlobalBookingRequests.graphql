@@ -9,16 +9,13 @@ query FindCookProfileGlobalBookingRequests($cookId: String!) {
                 message
                 dateTime
                 duration
-                priceClass {
-                    type
-                    min
-                    max
+                price {
+                    amount
                     currencyCode
                 }
                 location {
                     latitude
                     longitude
-                    text
                 }
                 createdAt
             }

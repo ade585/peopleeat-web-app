@@ -14,10 +14,9 @@ interface ChefProfilePageEditMenuProps {
     cookId: string;
     menuId: string;
     onSaveUpdates: () => void;
-    onDelete: () => void;
 }
 
-export default function ChefProfilePageEditMenu({ cookId, menuId, onSaveUpdates, onDelete }: ChefProfilePageEditMenuProps): ReactElement {
+export default function ChefProfilePageEditMenu({ cookId, menuId, onSaveUpdates }: ChefProfilePageEditMenuProps): ReactElement {
     const [step, setStep] = useState(0);
     const { t } = useTranslation('chef-profile');
     const { data, loading, refetch } = useQuery(FindCookMenuDocument, { variables: { menuId, cookId } });
@@ -36,19 +35,14 @@ export default function ChefProfilePageEditMenu({ cookId, menuId, onSaveUpdates,
                 <VStack className="w-full mb-6" style={{ alignItems: 'flex-start' }}>
                     <p className="w-full text-heading-xl md:text-heading-s my-0 mb-6">{t('edit-menu-title')}</p>
                     <Tabs value={step}>
-                        <Tab label={t('edit-menu-tab-title-common')} onClick={(): void => setStep(0)} style={{ textTransform: 'none' }} />
-                        <Tab label={t('edit-menu-tab-title-courses')} onClick={(): void => setStep(1)} style={{ textTransform: 'none' }} />
-                        <Tab label={t('edit-menu-tab-title-price')} onClick={(): void => setStep(2)} style={{ textTransform: 'none' }} />
+                        <Tab label="Common" onClick={(): void => setStep(0)} style={{ textTransform: 'none' }} />
+                        <Tab label="Courses" onClick={(): void => setStep(1)} style={{ textTransform: 'none' }} />
+                        <Tab label="Price" onClick={(): void => setStep(2)} style={{ textTransform: 'none' }} />
                     </Tabs>
                 </VStack>
 
                 {step === 0 && menu && (
-                    <ChefProfilePageEditMenusStep1
-                        menu={menu}
-                        cookId={cookId}
-                        onChangesApplied={(): void => void refetch()}
-                        onDelete={(): void => void onDelete()}
-                    />
+                    <ChefProfilePageEditMenusStep1 menu={menu} cookId={cookId} onChangesApplied={(): void => void refetch()} />
                 )}
 
                 {step === 1 && menu && (
